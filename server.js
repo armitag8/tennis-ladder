@@ -39,9 +39,9 @@ router.use((req, res, next) => {
 
 const startServer = handler => process.env.NODE_ENV === "production" ?
   require("https").createServer({
-    cert: fs.readFileSync('/etc/letsencrypt/live/tennis.ladder.ca/cert.pem', 'utf8'),
-    key: fs.readFileSync('/etc/letsencrypt/live/tennisladder.ca/privkey.pem', 'utf8'),
-    ca: fs.readFileSync('/etc/letsencrypt/live/tennisladder.ca/chain.pem', 'utf8')
+    cert: fs.readFileSync('/etc/letsencrypt/live/utsc.tennisladder.ca/cert.pem', 'utf8'),
+    key: fs.readFileSync('/etc/letsencrypt/live/utsc.tennisladder.ca/privkey.pem', 'utf8'),
+    ca: fs.readFileSync('/etc/letsencrypt/live/utsc.tennisladder.ca/chain.pem', 'utf8')
   }, handler).listen(443)
   : require("http").createServer(handler).listen(3001);
 
