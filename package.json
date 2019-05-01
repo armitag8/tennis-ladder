@@ -1,0 +1,38 @@
+{
+  "name": "tennis-ladder",
+  "version": "1.0.0",
+  "description": "A web application for managing a tennis ladder",
+  "main": "server.js",
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "nodemon server.js",
+    "client": "node start-client.js",
+    "postinstall": "node install-client.js",
+    "build": "node build-client.js; pkill node || true; NODE_ENV=production node server.js;",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/armitag8/tennis-ladder.git"
+  },
+  "keywords": [
+    "Tennis",
+    "Ladder"
+  ],
+  "author": "joe.armitage@mail.utoronto.ca",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/armitag8/tennis-ladder/issues"
+  },
+  "homepage": "https://github.com/armitag8/tennis-ladder#readme",
+  "devDependencies": {
+    "concurrently": "^4.1.0"
+  },
+  "dependencies": {
+    "cookie-parser": "^1.4.4",
+    "express": "^4.16.4",
+    "express-session": "^1.16.1",
+    "morgan": "^1.9.1",
+    "validator": "^10.11.0"
+  }
+}
