@@ -1,0 +1,1 @@
+real-favicon check-for-update --fail-on-update faviconData.json
