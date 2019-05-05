@@ -3,18 +3,25 @@ import '../style/login-screen.css';
 import validator from 'validator';
 
 const OWNER = "UTSC";
-const LOCALE = "en-CA";
-const LOCALE_NAME = "Canadian";
+const User = (function () {
+    return function (user) {
+        this.email = user.email;
+        this.password = user.password;
+        this.firstname = user.firstname;
+        this.lastname = user.lastname;
+    }
+})();
 
 class LoginScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
             mode: "Sign In",
-            user: "",
+            email: "",
             password: "",
             password2: "",
-            phone: "",
+            firstname: "",
+            lastname: "",
             valid: false,
             error: Error("Please input your credentials")
         };
@@ -22,14 +29,18 @@ class LoginScreen extends Component {
 
     validate = () => {
         let s = this.state;
-        if (! validator.isEmail(s.user))
+        if (! validator.isEmail(s.email))
             this.handleError(Error("Username must be a valid email address."));
         else if (s.password.length < 5) 
             this.handleError(Error("Password must have at least 5 characters"));
         else if (s.mode === 'Sign Up' && s.password !== s.password2)
             this.handleError(Error("Passwords must match"));
-        else if (s.mode === "Sign Up" && ! validator.isMobilePhone(s.phone, LOCALE))
-            this.handleError(Error("Not a valid " + LOCALE_NAME + " mobile phone number"));
+        else if (s.mode === "Sign Up" && s.firstname.length < 1)
+            this.handleError(Error("Your first name must be provided"));
+        else if (s.mode === "Sign Up" && validator.isAlpha(s.firstname))
+            this.handleError(Error("First name may only contain alphabetic characters"));
+        else if (s.mode === "Sign Up" && validator.isAlpha(s.lastname))
+            this.handleError(Error("Last name may only contain alphabetic characters"));
         else
             this.setState({ valid: true });
     }
@@ -53,14 +64,10 @@ class LoginScreen extends Component {
             fetch(new Request('/api/users/', {
                 method: this.state.mode === 'Sign Up' ? 'POST' : 'PUT',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: this.state.user,
-                    password: this.state.password,
-                    phone: this.state.phone
-                })
+                body: JSON.stringify(new User(this.state))
             }))
             .then(response => {
-                if (response.ok) this.props.onAuthenticate(this.state.user);
+                if (response.ok) this.props.onAuthenticate(this.state.email);
                 else response.text().then(msg => this.handleError(new Error(msg)));
             }).catch(err => this.handleError(new Error(err)));
         }
@@ -73,12 +80,13 @@ class LoginScreen extends Component {
                 <form className="login-form">
                     {this.state.valid ? null : <output className="has-text-grey is-size-7">{this.state.error.message}</output>}
                     <div className="inputFields">
-                        <input className="field input" placeholder="Email Address" name="user" onChange={this.onUpdate}/>
+                        <input className="field input" placeholder="Email Address" name="email" onChange={this.onUpdate}/>
                         <input className="field input" type="password" placeholder="Password" name="password" onChange={this.onUpdate}/>
                         {this.state.mode === "Sign In" ? null :
                             <React.Fragment>
                                 <input className="field input" type="password" placeholder="Retype Password" name="password2" onChange={this.onUpdate}/>
-                                <input className="field input" placeholder="Phone Number" name="phone" onChange={this.onUpdate}/>
+                                <input className="field input" placeholder="First Name" name="firstname" onChange={this.onUpdate}/>
+                                <input className="field input" placeholder="Last Name" name="lastname" onChange={this.onUpdate}/>
                             </React.Fragment>
                         }
                     </div>
