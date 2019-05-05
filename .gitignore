@@ -63,4 +63,5 @@ typings/
 # IDE
 .vscode
 
+# NeDB
 db
