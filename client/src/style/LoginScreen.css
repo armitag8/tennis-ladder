@@ -1,0 +1,49 @@
+.login {
+  background-color: #F8F8F8;
+  box-shadow: 1px 2px 10px #888888;
+  padding:50px;
+  width: 500px;
+  margin: auto;
+  margin-top: 10vh;
+  border-top: 5px #6180EF solid;
+}
+
+.inputFields {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.loginBtn {
+  display: block;
+  background: #6180EF;
+  border-radius: 28px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 20px;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+}
+
+.loginBtn:hover {
+  background: rgb(113, 140, 238);
+  text-decoration: none;
+}
+
+.field {
+  display: block;
+  border-radius: 5px;
+  border: solid 1px #F0F0F0;
+  margin-top:20px;
+  font-size: 15px;
+  padding: 10px;
+  outline: none;
+}
+
+.mode {
+  border: none;
+  font-size: 15px;
+  background: none;
+  color: #6180EF;
+  margin-top: 20px;
+  outline: none;
+}

@@ -1,0 +1,8 @@
+.row-bar{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    margin: 7px;
+}
