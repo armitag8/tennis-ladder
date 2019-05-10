@@ -20,7 +20,7 @@ router.use(session({
   saveUninitialized: true,
 }));
 router.use(express.static(path.join(__dirname,
-  process.env.NODE_ENV === "production" ? "tennis-ladder/build/" : "public/")
+  process.env.NODE_ENV === "production" ? "client/build/" : "public/")
 ));
 router.use(logger("dev"));
 router.use(express.json());
