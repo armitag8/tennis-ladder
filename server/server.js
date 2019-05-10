@@ -20,7 +20,7 @@ router.use(session({
   saveUninitialized: true,
 }));
 router.use(express.static(path.join(__dirname,
-  process.env.NODE_ENV === "production" ? "client/build/" : "public/")
+  process.env.NODE_ENV === "production" ? "../client/build/" : "../client/public/")
 ));
 router.use(logger("dev"));
 router.use(express.json());
@@ -38,13 +38,18 @@ class User {
   }
 }
 
-const startServer = handler => process.env.NODE_ENV === "production" ?
-  require("https").createServer({
-    cert: fs.readFileSync("/etc/letsencrypt/live/utsc.tennisladder.ca/cert.pem", "utf8"),
-    key: fs.readFileSync("/etc/letsencrypt/live/utsc.tennisladder.ca/privkey.pem", "utf8"),
-    ca: fs.readFileSync("/etc/letsencrypt/live/utsc.tennisladder.ca/chain.pem", "utf8")
-  }, handler).listen(443)
-  : require("http").createServer(handler).listen(3001);
+const startServer = handler => {
+  if (process.env.NODE_ENV === "production") {
+    require("https").createServer({
+      cert: fs.readFileSync("/etc/letsencrypt/live/utsc.tennisladder.ca/cert.pem", "utf8"),
+      key: fs.readFileSync("/etc/letsencrypt/live/utsc.tennisladder.ca/privkey.pem", "utf8"),
+      ca: fs.readFileSync("/etc/letsencrypt/live/utsc.tennisladder.ca/chain.pem", "utf8")
+    }, handler).listen(443);
+    require("http").createServer(
+      express().use((req, res, next) => res.redirect(`https://${req.headers.host}${req.url}`))
+    );
+  } else require("http").createServer(handler).listen(3001); 
+}
 
 const isAuthenticated = (req, res, next) => 
   req.session.user ? next() : res.status(401).end("Access Denied");
