@@ -46,7 +46,7 @@ const startServer = handler => {
       ca: fs.readFileSync("/etc/letsencrypt/live/utsc.tennisladder.ca/chain.pem", "utf8")
     }, handler).listen(443);
     require("http").createServer(
-      express().use((req, res, next) => res.redirect(`https://${req.headers.host}${req.url}`))
+      express().use((req, res) => res.redirect(`https://${req.headers.host}${req.url}`)).listen(80)
     );
   } else require("http").createServer(handler).listen(3001); 
 }
