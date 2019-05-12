@@ -25,6 +25,8 @@ class LadderView extends Component {
         .then(response => {
             if (response.status === 200)
                 response.json().then(users => this.setState({ players: users }));
+            else if (response.status === 401)
+                this.props.logout();
             else 
                 console.log(response);
         })

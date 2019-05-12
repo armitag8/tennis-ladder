@@ -41,8 +41,8 @@ class App extends Component {
             login: (<LoginScreen
                 onAuthenticate={this.authenticate}
             />),
-            ranking: <LadderView user={this.state.user}/>,
-            games: <GamesView />,
+            ranking: <LadderView user={this.state.user} logout={this.logout}/>,
+            games: <GamesView user={this.state.user} logout={this.logout}/>,
             profile: <div/>
         };
         return (
