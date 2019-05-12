@@ -9,6 +9,9 @@ const User = (function () {
         this.password = user.password;
         this.firstname = user.firstname;
         this.lastname = user.lastname;
+        this.position = 0;
+        this.wins = 0;
+        this.losses = 0;
     }
 })();
 
@@ -83,31 +86,38 @@ class LoginScreen extends Component {
                         : <output className="has-text-grey is-size-7">{this.state.error.message}</output>}
                     <div className="inputFields">
                         <input 
-                        className="field input"
-                         placeholder="Email Address" 
-                         name="_id" 
-                         onChange={this.onUpdate}/>
+                            type="email"
+                            className="field input"
+                            autoComplete="username"
+                            placeholder="Email Address" 
+                            name="_id" 
+                            onChange={this.onUpdate}/>
                         <input 
-                        className="field input"
-                         type="password" 
-                         placeholder="Password" 
-                         name="password" 
-                         onChange={this.onUpdate}/>
+                            className="field input"
+                            autoComplete={this.state.mode === "Sign In" ? 
+                                            "current-password" : "new-password"}
+                            type="password" 
+                            placeholder="Password" 
+                            name="password" 
+                            onChange={this.onUpdate}/>
                         {this.state.mode === "Sign In" ? null :
                             <React.Fragment>
                                 <input 
                                     className="field input" 
                                     type="password" 
+                                    autoComplete="new-password"
                                     placeholder="Retype Password" 
                                     name="password2" 
                                     onChange={this.onUpdate}/>
                                 <input 
                                     className="field input" 
+                                    autoComplete="given-name"
                                     placeholder="First Name" 
                                     name="firstname" 
                                     onChange={this.onUpdate}/>
                                 <input 
                                     className="field input" 
+                                    autoComplete="family-name"
                                     placeholder="Last Name" 
                                     name="lastname" 
                                     onChange={this.onUpdate}/>

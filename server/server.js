@@ -12,6 +12,7 @@ const database = require("./src/database.js")
 const router = express();
 
 const LADDER_MASTER = "joe.armitage@mail.utoronto.ca";
+const startDate = new Date("2019-05-19");
 
 router.use(bodyParser.json());
 router.use(session({
@@ -31,10 +32,67 @@ router.use(express.urlencoded({
 
 class User {
   constructor(user) {
+    if (! user)
+      throw Error("Not a valid user");
+    else if (undefined === user._id || ! validator.isEmail(user._id))
+      throw Error("Not a valid email address");
+    else if (undefined === user.lastname || ! validator.isAlpha(user.lastname))
+      throw Error("Not a valid last name");
+    else if (undefined === user.firstname || ! validator.isAlpha(user.firstname))
+      throw Error("Not a valid first name");
+    else if (! Number.isInteger(user.position) || user.position < 0)
+      throw Error("Not a valid position")
+    else if (! Number.isInteger(user.wins) || user.wins < 0)
+      throw Error("Not a valid number of wins")
+    else if (! Number.isInteger(user.losses) || user.losses < 0)
+      throw Error("Not a valid number of losses")
     this._id = user._id;
     this.password = user.password;
-    this.firstname = validator.escape(user.firstname);
-    this.lastname = validator.escape(user.lastname);
+    this.firstname = user.firstname;
+    this.lastname = user.lastname;
+    this.position = user.position;
+    this.wins = user.wins;
+    this.losses = user.losses;
+  }
+}
+
+class Game {
+  constructor(game) {
+    if (undefined === game.player1 || ! validator.isEmail(game.player1))
+      throw Error("Not a valid email address1");
+    else if (undefined === game.player2 || ! validator.isEmail(game.player2))
+      throw Error("Not a valid email address2");
+    else if (game.player1 == game.player2)
+      throw Error("Cannot play against yourself");
+    else if (Number.isInteger(game.week) && game.week < 1)
+      throw Error("Not a valid week number");
+    else if (undefined === game.score || ! this.isValidScore(game.score))
+      throw Error("Not a valid score");
+    this.player1 = game.player1;
+    this.player2 = game.player2;
+    this.week = game.week || Math.floor((new Date() - startDate) / (7 * 24 * 60 * 60 * 1000));
+    this.score = game.score;
+  }
+
+  isValidScore(score){
+      let s0 = score[0];
+      let s1 = score[1];
+      let s2 = score[2];
+      let s3 = score[3];
+      if (s0 === 8 && s1 <= 6 && s1 >= 0)
+          return true;
+      else if (s1 === 8 && s0 <= 6 && s0 >= 0)
+          return true;
+      else if (s0 === 9 && s1 === 7)
+          return true;
+      else if (s1 === 9 && s0 === 7)
+          return true;
+      else if (s0 === 8 && s1 === 8 && s2 - s3 >= 2 && s2 > 10 && s3 > 0)
+          return true;
+      else if (s0 === 8 && s1 === 8 && s3 - s2 >= 2 && s3 > 10 && s2 > 0)
+          return true;
+      else
+          return false;
   }
 }
 
@@ -60,13 +118,16 @@ const authenticate = (req, res) => {
       path: "/",
       maxAge: 60 * 60 * 24 * 31
   }));
-  console.log("USER: " + user);
   req.session.user = user;
   res.json(user);
 };
 
 const sanitizeUser = (req, res, next) => {
-  req.body = new User(req.body);
+  try {
+    req.body = new User(req.body);
+  } catch (e) {
+    res.status(422).send(e.message);
+  } 
   next();
 }
 
@@ -75,6 +136,16 @@ const validateUserId = (req, res, next) =>
 
 const checkIdMatchesBody = (req, res, next) =>
   req.params._id === req.body._id ? next() : res.status(422).send("Body does not match URL (ID).");
+
+// Sign out
+router.put("/api/user/", (req, res, next) => {
+  req.session.user = null;
+  res.setHeader("Set-Cookie", cookie.serialize("user", "", {
+      path: "/",
+      maxAge: 60 * 60 * 24 * 31
+  }));
+  res.status(200).end();
+});
 
 // Sign in
 router.put("/api/user/:_id", validateUserId, checkIdMatchesBody, (req, res, next) =>
@@ -111,6 +182,16 @@ router.get("/api/week/:number/", isAuthenticated, (req, res, next) => {
   database.getUsers(pageNumber)
   .then(users => res.json(users))
   .catch(error => res.status(error.code).send(error.message));
+});
+
+router.post("/api/games/", isAuthenticated, (req, res, next) => {
+  try {
+    console.log(req.body);
+    database.addGame(new Game(req.body))
+    .then(console.log).catch(error => res.status(error.code).send(error.message));
+  } catch (e) {
+    res.status(422).send(e.message);
+  }
 });
 
 startServer(router);

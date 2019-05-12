@@ -1,3 +1,10 @@
+.player-row{
+    border: 2px black solid;
+    border-radius: 10px;
+    padding: 2px 5px 2px 5px;
+    margin: 2px;
+}
+
 .row-bar{
     display: flex;
     flex-direction: row;
@@ -5,4 +12,24 @@
     align-items: center;
     justify-content: space-between;
     margin: 7px;
+}
+
+.row-bar .player-info{
+    display: flex;
+    flex-grow: 99;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+
+
+@media all and (max-width: 640px) {
+    .stats{
+        display: none;
+    }
+
 }

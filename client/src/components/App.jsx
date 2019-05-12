@@ -1,6 +1,8 @@
-import React, { Component } from 'react';
-import LoginScreen from './LoginScreen';
-import LadderView from './LadderView'
+import React, { Component } from "react";
+import LoginScreen from "./LoginScreen";
+import LadderView from "./LadderView";
+import NavBar from "./NavBar";
+import GamesView from "./GamesView";
 
 class App extends Component {
     constructor(props) {
@@ -12,15 +14,14 @@ class App extends Component {
     }
 
     componentDidMount = () => {
-        let username = document.cookie.replace(/(?:(?:^|.*;\s*)user\s*=\s*([^;]*).*$)|^.*$/, "$1")
-        this.authenticate(username || null);
+        let username = document.cookie.replace(/(?:(?:^|.*;\s*)user\s*=\s*([^;]*).*$)|^.*$/, "$1");
+        this.authenticate(decodeURIComponent(username) || null);
     }
 
     logout = () => {
-        fetch(new Request('/api/signout/', {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-            body: null
+        fetch(new Request("/api/user/", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" }
         }))
         .then(response => {
             if (response.ok) this.authenticate(null);
@@ -29,7 +30,7 @@ class App extends Component {
     };
 
     authenticate = user => {
-        let view = user ? "ladder" : "login";
+        let view = user ? "ranking" : "login";
         this.setState({ user: user }, () => this.switchView(view));
     };
 
@@ -38,15 +39,18 @@ class App extends Component {
     render = () => {
         let views = {
             login: (<LoginScreen
-                view={this.state.view}
                 onAuthenticate={this.authenticate}
             />),
-            ladder: (<LadderView
-                view={this.state.view}
-                onLogout={this.logout}
-            />)
+            ranking: <LadderView user={this.state.user}/>,
+            games: <GamesView />,
+            profile: <div/>
         };
-        return views[this.state.view];
+        return (
+            <div>
+                <NavBar user={this.state.user} changeView={this.switchView} logout={this.logout}/>
+                {views[this.state.view]}
+            </div>
+        );
     };
 }
 

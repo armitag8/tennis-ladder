@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import '../style/LadderView.css';
 import Button from "./Button";
+import NewGameForm from "./NewGameForm";
 
 class LadderView extends Component {
     constructor(props) {
@@ -21,20 +22,21 @@ class LadderView extends Component {
 
     updatePlayers = () => 
         fetch("/api/week/" + this.state.week)
-        .then(response => response.json().then(users => this.setState({ players: users })))
+        .then(response => {
+            if (response.status === 200)
+                response.json().then(users => this.setState({ players: users }));
+            else 
+                console.log(response);
+        })
         .catch(console.log);
 
     componentDidMount = this.updatePlayers;
 
     render() {
         return (<div>
-            <div className="row-bar">
-                <Button icon="icono-caretLeft" />
-                <h2>Rankings: Week {this.state.week} </h2>
-                <Button icon="icono-caretRight" />
-            </div>
             {this.state.players.map(player => 
-                <PlayerRow 
+                <PlayerRow
+                    user={this.props.user}
                     key={player._id} 
                     _id={player._id}
                     position={player.position}
@@ -48,19 +50,37 @@ class LadderView extends Component {
 }
 
 class PlayerRow extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            edit: false
+        };
+    }
+
     render() {
-        // eslint-disable-next-line jsx-a11y/anchor-has-content
-        return (<div className="row-bar" >
-                <h1 className="btn">{this.props.position}</h1>
-                <h3>{this.props.firstname} {this.props.lastname}</h3>
-                <div>Wins: {this.props.wins}</div>
-                <div>Losses: {this.props.losses}</div>
-                
-                <Button 
-                    icon="icono-mail" 
-                    onClick={() => window.open("mailto:" + this.props._id)}
-                />
-            </div>);
+        return (<div className="player-row">
+                    <div className="row-bar" >
+                        <Button icon={this.state.edit ? "icono-cross" : "icono-sliders"}
+                            onClick={() => this.props.user === this.props._id ? null :
+                                this.setState(s => ({ edit: ! s.edit }))}
+                        />
+                        <div className="player-info">
+                            <h2>{this.props.position}</h2>
+                            <h3>{this.props.firstname} {this.props.lastname}</h3>
+                            <div className="stats">Wins: {this.props.wins}</div>
+                            <div className="stats">Losses: {this.props.losses}</div>
+                        </div>
+                        <Button 
+                            icon="icono-mail" 
+                            onClick={() => window.open("mailto:" + this.props._id)}
+                        />
+                    </div>
+                    {! this.state.edit ? null : 
+                        <NewGameForm 
+                            user={this.props.user}
+                            opponent={this.props._id} 
+                            opponentName={this.props.firstname}/>}
+                </div>);
     }
 }
 
