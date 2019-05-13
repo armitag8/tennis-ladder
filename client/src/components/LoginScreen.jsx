@@ -30,6 +30,8 @@ class LoginScreen extends Component {
         };
     }
 
+    componentDidMount = this.props.logout;
+
     validate = () => {
         let s = this.state;
         if (! validator.isEmail(s._id))

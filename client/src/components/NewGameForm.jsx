@@ -51,7 +51,7 @@ class NewGameForm extends Component {
             (value > 9 && index < 2)) return;
         this.setState(oldState => {
             let score = oldState.score;
-            score[index] = value || "";
+            score[index] = Number.isInteger(value) ? value : "";
             if (score.length === 2 && score[0] === 8 && score[1] === 8) score = [8, 8, "", ""];
             if (score.length === 4 && (score[0] !== 8 || score[1] !== 8)) score = score.slice(0,2);
             return { score: score };

@@ -42,7 +42,7 @@ class App extends Component {
         super(props);
         this.state = {
             user: null, 
-            view: "login",
+            view: "logout",
         };
     }
 
@@ -57,20 +57,18 @@ class App extends Component {
             headers: { "Content-Type": "application/json" }
         }))
         .then(response => {
-            if (response.ok) this.authenticate(null);
+            if (response.ok) this.setState({ user: null, view: "logout" });
             else response.text().then(msg => console.log(msg));
         }).catch(err => console.log(err));
     };
 
-    authenticate = user => this.setState({ user: user });
+    authenticate = user => this.setState({ user: user, view: "rules" });
 
-    switchView = view => view === "login" ? this.authenticate(null) : this.setState({ view: view });
+    switchView = view => this.setState({ view: view });
 
     render = () => {
         let views = {
-            login: (<LoginScreen
-                onAuthenticate={this.authenticate}
-            />),
+            logout: <LoginScreen onAuthenticate={this.authenticate} logout={this.logout}/>,
             rules: rules,
             ranking: <LadderView user={this.state.user} logout={this.logout}/>,
             games: <GamesView user={this.state.user} logout={this.logout}/>,
@@ -83,7 +81,7 @@ class App extends Component {
                         changeView={this.switchView} 
                         logout={this.logout} 
                         view={this.state.view}
-                        views={Object.keys(views).slice(1)}
+                        views={Object.keys(views)}
                     />}
                 {views[this.state.view]}
             </div>
