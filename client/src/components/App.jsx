@@ -4,8 +4,9 @@ import LadderView from "./LadderView";
 import NavBar from "./NavBar";
 import GamesView from "./GamesView";
 import ProfileView from "./ProfileView";
+import "../style/Rules.css"
 
-let rules = <div>
+let rules = <div className="rules">
     <h2>Welcome to the Tennis Ladder</h2>
     <h3>Mission</h3>
     <p>
