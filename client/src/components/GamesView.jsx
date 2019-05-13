@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import '../style/LadderView.css';
 import NewGameForm from "./NewGameForm";
+import Button from './Button';
 
 class LadderView extends Component {
     constructor(props) {
@@ -16,7 +17,7 @@ class LadderView extends Component {
         this.setState(newState, this.validate);
     }
 
-    updateGames = () => 
+    getGames = () => 
         fetch("/api/games/")
         .then(response => {
             if (response.status === 200)
@@ -28,21 +29,33 @@ class LadderView extends Component {
         })
         .catch(console.log);
 
-    componentDidMount = () => this.updateGames();
-
     render() {
         return (
             <div>
-                <NewGameForm opponentName="Joe"/>
-                {this.state.games.map(game => 
-                    <GameRecord 
-                        key={game._id} 
-                        _id={game._id}
-                        player1={game.player1}
-                        player2={game.player2}
-                        score={game.score}
-                    />)}
-            </div>);
+                <section>
+                    <h2>Upcoming Game</h2>
+                </section>
+                <section>
+                    <h2>Add Game</h2>
+                    <NewGameForm opponentName="Joe"/>
+                </section>
+                <section>
+                    <h2>Past Games</h2>
+                    <form className="game-search">
+                        <input type="search" />
+                        <Button icon="icono-search"/>
+                    </form>
+                    {this.state.games.map(game => 
+                        <GameRecord 
+                            key={game._id} 
+                            _id={game._id}
+                            player1={game.player1}
+                            player2={game.player2}
+                            score={game.score}
+                        />)}
+                </section>
+            </div>
+        );
     }
 }
 

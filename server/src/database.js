@@ -91,7 +91,7 @@ let database = (function () {
         })
     );
 
-    const USERS_PER_PAGE = 10;
+    const USERS_PER_PAGE = 50;
     module.getUsers = (pageNumber) => new Promise((resolve, reject) =>
         users.find({}).sort({ position: 1 }).skip(USERS_PER_PAGE * pageNumber).limit(USERS_PER_PAGE)
             .exec((err, foundUsers) => err ? reject(DB_FAIL) : resolve(foundUsers))

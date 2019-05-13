@@ -1,22 +1,103 @@
-.navbar{
-    padding-top: 5px;
-    width: 100%;
+.navbar {
     display: flex;
     flex-direction: row;
-    flex-wrap: none;
-    align-items: stretch;
-    justify-content: space-around;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: 17px;
+    padding-right: 17px;
 }
 
 .tab{
-    text-align: center;
-    width: 100%;
-    height: 30px;
+    background: #6180EF;
+}
+
+.tabs{
+    height: 100%;
+    width: 40%;
 }
 
 @media all and (max-width: 640px) {
+    .hidden-sidebar{
+        display: none;
+    }
+    
+    .sidebar{
+        display: block;
+    }
+
+    .active{
+        display: none;
+    }
+
     .navbar {
-        flex-direction: column;
-        align-items: stretch;
+        border-bottom: 1px solid black;
+        background: #6180EF;
+        opacity: 0.95;
+    }
+
+    .tabs {
+        background: #6180EF;
+        opacity: 0.95;
+        position: absolute;
+        float: left;
+        z-index: 99;
+        font-size: 200%;
+    }
+
+}
+
+@media all and (min-width: 640px) {
+    .burger{
+        display: none;
+    }
+    
+    .tabs{
+        display: flex;
+        width: 100%;
+        height: auto;
+        flex-direction: row;
+        flex-wrap: none;
+        align-items: flex-end;
+        justify-content: space-around;
+        padding-top: 5px;
+    }
+
+    .navbar{
+        padding: 0px;
+        border-right: 0px solid black;
+    }
+
+    .title{
+        display: none;
+    }
+    
+    .tab{
+        text-align: center;
+        width: 100%;
+        border-top: 2px solid black; 
+        border-left: 1px solid black; 
+        border-right: 1px solid black; 
+        border-radius: 10px 10px 0px 0px;
+        margin-bottom: 5px;
+        padding: 5px;
+    }
+
+    .inactive{
+        border-bottom: 1px solid black; 
+        opacity: 0.75;
+    }
+    
+    .tab:hover {
+        height: 25px;
+        opacity: 0.85;
+    }
+
+    .active {
+        font-weight: bold;
+        height: 28px;
+    }
+    
+    .active:hover{
+        height: 28px;
     }
 }

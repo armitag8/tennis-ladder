@@ -113,7 +113,7 @@ const isAuthenticated = (req, res, next) =>
   req.session.user ? next() : res.status(401).end("Access Denied");
 
 const authenticate = (req, res) => {
-  user = req.params._id;
+  let user = req.params._id;
   res.setHeader("Set-Cookie", cookie.serialize("user", user, {
       path: "/",
       maxAge: 60 * 60 * 24 * 31
