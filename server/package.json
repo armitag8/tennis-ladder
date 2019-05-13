@@ -9,6 +9,7 @@
     "express-session": "^1.16.1",
     "morgan": "^1.9.1",
     "nedb": "^1.8.0",
+    "nodemon": "^1.19.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.1",

@@ -3,9 +3,7 @@
   "version": "1.0.0",
   "description": "A web app for managing tennis ladders.",
   "main": "npm start",
-  "dependencies": {
-    "nodemon": "^1.19.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "concurrently": "^4.1.0"
   },
@@ -16,7 +14,7 @@
     "install": "node scripts/install-server.js",
     "postinstall": "node scripts/install-client.js",
     "build": "node scripts/build-client.js",
-    "deploy": "npm run build; cd server; pkill node || true; NODE_ENV=production nodemon server.js & echo tennis ladder deployed;",
+    "deploy": "npm run build; cd server; pkill node || true; NODE_ENV=production node node_modules/nodemon/bin/nodemon.js ./server.js & echo tennis ladder deployed;",
     "test": "concurrently \"node scripts/test-server.js\" \"node scripts/test-client.js\""
   },
   "repository": {

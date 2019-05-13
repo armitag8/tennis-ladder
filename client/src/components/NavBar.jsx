@@ -10,6 +10,8 @@ class NavBar extends Component {
         this.state = {nav: false};
     }
 
+    handleKeyPress = event => event.key !== "Escape" ? null : this.setState({nav: false});
+
     render() {
         return (
             <React.Fragment>
