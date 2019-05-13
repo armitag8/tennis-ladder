@@ -76,7 +76,7 @@ class App extends Component {
             rules: rules,
             ranking: <LadderView user={this.state.user} logout={this.logout}/>,
             games: <GamesView user={this.state.user} logout={this.logout}/>,
-            profile: <ProfileView/>,
+            //profile: <ProfileView/>,
         };
         return (
             <div>

@@ -79,7 +79,7 @@ class LoginScreen extends Component {
     render() {
         return (
             <div className="login has-text-centered">
-                <h2 className="title">Welcome to {OWNER}'s Tennis Ladder</h2>
+                <h2>Welcome to {OWNER}'s Tennis Ladder</h2>
                 <form className="login-form">
                     {this.state.valid 
                         ? null 

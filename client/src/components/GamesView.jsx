@@ -33,8 +33,9 @@ class LadderView extends Component {
         return (
             <div>
                 <section>
-                    <h2>Upcoming Game</h2>
+                    <h2>Upcoming Games</h2>
                 </section>
+            </div>);/*
                 <section>
                     <h2>Add Game</h2>
                     <NewGameForm opponentName="Joe"/>
@@ -55,7 +56,7 @@ class LadderView extends Component {
                         />)}
                 </section>
             </div>
-        );
+        );*/
     }
 }
 
