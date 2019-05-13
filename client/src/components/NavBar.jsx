@@ -44,15 +44,11 @@ class NavBar extends Component {
 }
 
 class Tab extends Component {
-    clickHandler = () => {
-        this.props.changeView(this.props.name);
-    };
-
     render() {
         let name = toTitleCase(this.props.name);
         return (
             <div className={this.props.active ? "tab active" : "tab inactive"}
-                onClick={this.clickHandler}
+                onClick={() => this.props.changeView(this.props.name)}
             >{name}
             </div>
         );

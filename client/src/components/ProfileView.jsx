@@ -14,6 +14,7 @@ class ProfileView extends Component {
             error: Error("Please input your credentials")
         };
     }
+    componentDidMount = () => this.props.user ? null : this.props.logout();
 
     onUpdate = (event) => {
         let newState = {}

@@ -32,7 +32,7 @@ class LadderView extends Component {
         })
         .catch(console.log);
 
-    componentDidMount = this.updatePlayers;
+    componentDidMount = () => this.props.user ? this.updatePlayers() : this.props.logout();
 
     render() {
         return (<div>
