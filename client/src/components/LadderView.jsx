@@ -81,7 +81,9 @@ class PlayerRow extends Component {
                         <NewGameForm 
                             user={this.props.user}
                             opponent={this.props._id} 
-                            opponentName={this.props.firstname}/>}
+                            opponentName={this.props.firstname}
+                            onSubmit={this.updatePlayers}
+                        />}
                 </div>);
     }
 }

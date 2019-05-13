@@ -62,12 +62,9 @@ class App extends Component {
         }).catch(err => console.log(err));
     };
 
-    authenticate = user => {
-        let view = user ? "rules" : "login";
-        this.setState({ user: user }, () => this.switchView(view));
-    };
+    authenticate = user => this.setState({ user: user });
 
-    switchView = view => this.setState({ view: view });
+    switchView = view => view === "login" ? this.authenticate(null) : this.setState({ view: view });
 
     render = () => {
         let views = {

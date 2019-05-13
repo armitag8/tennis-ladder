@@ -4,7 +4,6 @@
   "description": "A web api for managing a tennis ladder",
   "dependencies": {
     "cookie-parser": "^1.4.4",
-    "crypto": "^1.0.1",
     "express": "^4.16.4",
     "express-session": "^1.16.1",
     "morgan": "^1.9.1",
