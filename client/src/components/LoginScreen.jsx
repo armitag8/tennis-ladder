@@ -82,7 +82,7 @@ class LoginScreen extends Component {
         return (
             <div className="login has-text-centered">
                 <h2>Welcome to {OWNER}'s Tennis Ladder</h2>
-                <form className="login-form">
+                <form className="login-form" onSubmit={this.onSubmit}>
                     {this.state.valid 
                         ? null 
                         : <output className="has-text-grey is-size-7">{this.state.error.message}</output>}
@@ -118,7 +118,7 @@ class LoginScreen extends Component {
                                     name="firstname" 
                                     onChange={this.onUpdate}/>
                                 <input 
-                                    className="field input" 
+                                    className="field input"
                                     autoComplete="family-name"
                                     placeholder="Last Name" 
                                     name="lastname" 
@@ -128,7 +128,7 @@ class LoginScreen extends Component {
                     </div>
                     <input 
                         className="loginBtn"
-                        type="button" 
+                        type="submit"
                         value={this.state.mode} 
                         onClick={this.onSubmit}
                         disabled={!this.state.valid}

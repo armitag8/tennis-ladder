@@ -53,3 +53,7 @@
   margin-top: 20px;
   outline: none;
 }
+
+.mode:hover, .mode:active, .mode:focus{
+  font-weight: bold;
+}
