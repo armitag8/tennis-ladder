@@ -10,7 +10,7 @@ class NavBar extends Component {
         this.state = {nav: false};
     }
 
-    handleKeyPress = event => event.key !== "Escape" ? null : this.setState({nav: false});
+    hideNav = () => this.setState(s => ({nav: ! s.nav}));
 
     render() {
         return (
@@ -19,7 +19,7 @@ class NavBar extends Component {
                     <div className="burger">
                         <Button 
                             icon={this.state.nav ? "icono-cross" : "icono-hamburger"}
-                            onClick={() => this.setState(s => ({nav: ! s.nav}))}
+                            onClick={this.hideNav}
                         />
                     </div>
                     <div className="title">
@@ -32,7 +32,10 @@ class NavBar extends Component {
                             <Tab
                                 key={tab}
                                 name={tab}
-                                changeView={this.props.changeView}
+                                changeView={name => {
+                                    this.hideNav();
+                                    this.props.changeView(name);
+                                }}
                                 active={this.props.view === tab}
                             />
                         )}
