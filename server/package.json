@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A web api for managing a tennis ladder",
   "dependencies": {
+    "connect-nedb-session": "0.0.3",
     "cookie-parser": "^1.4.4",
     "express": "^4.16.4",
     "express-session": "^1.16.1",

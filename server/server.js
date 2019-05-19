@@ -6,7 +6,8 @@ const fs = require("fs");
 const validator = require("validator");
 const session = require("express-session");
 const cookie = require("cookie");
-const database = require("./src/database.js")
+const database = require("./src/database.js");
+const NedbStore = require('connect-nedb-session')(session);
 
 const router = express();
 
@@ -22,6 +23,7 @@ router.use(session({
   cookie: { secure: isProduction() },
   resave: false,
   saveUninitialized: true,
+  store: new NedbStore({ filename: 'db/sessions' })
 }));
 router.use(express.static(path.join(__dirname,
   process.env.NODE_ENV === "production" ? "../client/build/" : "../client/public/")
