@@ -10,7 +10,7 @@ class LadderView extends Component {
             games: []
         };
     }
-    componentDidMount = () => this.props.user ? null : this.props.logout();
+    componentDidMount = () => this.props.user ? this.getGames() : this.props.logout();
 
     onUpdate = (event) => {
         let newState = {}
@@ -19,12 +19,12 @@ class LadderView extends Component {
     }
 
     getGames = () => 
-        fetch("/api/games/")
+        fetch("/api/games/scheduled/" + this.props.user)
         .then(response => {
             if (response.status === 200)
-                response.json().then(games => this.setState({ games: games }));
+                response.json().then(games => this.setState({ games: games }, console.log(games)));
             else if (response.status === 401) 
-                this.props.onLogout();
+                this.props.logout();
             else 
                 console.log(response);
         })
@@ -35,6 +35,15 @@ class LadderView extends Component {
             <div>
                 <section>
                     <h2>Upcoming Games</h2>
+                    {this.state.games.map(game => <div>
+                        <div>    
+                            Week: {game.week}
+                        </div>
+                        <div>
+                            Opponent: {game.player1 === this.props.user ?
+                                game.player2 : game.player1}
+                        </div>
+                    </div>)}
                 </section>
             </div>);/*
                 <section>

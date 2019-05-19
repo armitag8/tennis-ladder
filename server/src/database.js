@@ -99,6 +99,17 @@ let database = (function () {
 
     module.deleteUser = userID => console.log("delete: " + userID);
 
+    module.scheduleGames = week => users.find({}, (err, users) => 
+        err ? console.log(err) : users.forEach((user, index) =>
+            index === 0 ? null : module.scheduleGame({
+                player1: user._id,
+                player2: users[index - 1]._id,
+                week: week,
+                played: false
+            }, users[index - 1]).then(
+                console.log).catch(console.log))
+    );
+
     module.scheduleGame = game => new Promise((resolve, reject) => 
         games.find({
             $or: [
@@ -114,6 +125,13 @@ let database = (function () {
             else
                 games.insert(game, err => err ? reject(DB_FAIL) : resolve(true));
         })
+    );
+
+    module.getScheduledGames = player => new Promise((resolve, reject) =>
+        games.find({
+            $or: [{ player1: player }, { player2: player }],
+            played: false
+        }, (err, foundGames) => err ? reject(DB_FAIL) : resolve(foundGames))
     );
 
     module.playGame = game => new Promise((resolve, reject) =>

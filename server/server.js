@@ -32,6 +32,8 @@ router.use(express.urlencoded({
   extended: false
 }));
 
+const thisWeek = () => Math.floor((new Date() - START_DATE) / A_WEEK_IN_SECONDS);
+
 class User {
   constructor(user) {
     if (! user)
@@ -68,13 +70,13 @@ class Game {
       throw Error("Cannot play against yourself");
     else if (Number.isInteger(game.week) && game.week < 1)
       throw Error("Not a valid week number");
-    else if (undefined === game.score || ! this.isValidScore(game.score))
-      throw Error("Not a valid score");
     else if (this.played && this.played !== true)
       throw Error("Not a valid 'played' flag");
+    else if (this.played && (undefined === game.score || ! this.isValidScore(game.score)))
+      throw Error("Not a valid score");
     this.player1 = game.player1;
     this.player2 = game.player2;
-    this.week = game.week || Math.floor((new Date() - START_DATE) / A_WEEK_IN_SECONDS);
+    this.week = game.week || thisWeek();
     this.score = game.score;
     this.played = game.played || false;
   }
@@ -189,6 +191,12 @@ router.get("/api/week/:number/", isAuthenticated, (req, res, next) => {
   .catch(error => res.status(error.code).send(error.message));
 });
 
+router.get("/api/games/scheduled/:user", isAuthenticated, (req, res, next) => 
+  database.getScheduledGames(req.params.user)
+  .then(docs => res.json(docs))
+  .catch(error => res.status(error.code).send(error.message))
+);
+
 router.post("/api/games/", isAuthenticated, (req, res, next) => {
   try {
     database.playGame(new Game(req.body))
@@ -198,5 +206,12 @@ router.post("/api/games/", isAuthenticated, (req, res, next) => {
     res.status(422).send(e.message);
   }
 });
+
+const autoScheduleGames = week => {
+  database.scheduleGames(week);
+  setTimeout(() => autoScheduleGames(++week), A_WEEK_IN_SECONDS);
+}
+
+autoScheduleGames(thisWeek());
 
 startServer(router);
