@@ -66,5 +66,5 @@ typings/
 # NeDB
 db
 
-# I'm sick of merge conflicts preventing continuous deployment
+# Sick of merge conflicts preventing continuous deployment
 package-lock.json
