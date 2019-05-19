@@ -1,6 +1,5 @@
 const express = require("express");
 const path = require("path");
-const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const bodyParser = require("body-parser");
 const fs = require("fs");
@@ -12,11 +11,15 @@ const database = require("./src/database.js")
 const router = express();
 
 const LADDER_MASTER = "joe.armitage@mail.utoronto.ca";
-const startDate = new Date("2019-05-19");
+const START_DATE = new Date("2019-05-19");
+const A_WEEK_IN_SECONDS = 7 * 24 * 60 * 60 * 1000;
+
+const isProduction = () => process.env.NODE_ENV === "production";
 
 router.use(bodyParser.json());
 router.use(session({
   secret: "tennis-ladder-3][.;./-o0;,l98uyjbhl87r6tcruy5 534y;.][34a2s32afty6iu9y8-moi",
+  cookie: { secure: isProduction() },
   resave: false,
   saveUninitialized: true,
 }));
@@ -28,7 +31,6 @@ router.use(express.json());
 router.use(express.urlencoded({
   extended: false
 }));
-//router.use(cookieParser());
 
 class User {
   constructor(user) {
@@ -68,10 +70,13 @@ class Game {
       throw Error("Not a valid week number");
     else if (undefined === game.score || ! this.isValidScore(game.score))
       throw Error("Not a valid score");
+    else if (this.played && this.played !== true)
+      throw Error("Not a valid 'played' flag");
     this.player1 = game.player1;
     this.player2 = game.player2;
-    this.week = game.week || Math.floor((new Date() - startDate) / (7 * 24 * 60 * 60 * 1000));
+    this.week = game.week || Math.floor((new Date() - START_DATE) / A_WEEK_IN_SECONDS);
     this.score = game.score;
+    this.played = game.played || false;
   }
 
   isValidScore(score){
@@ -97,7 +102,7 @@ class Game {
 }
 
 const startServer = handler => {
-  if (process.env.NODE_ENV === "production") {
+  if (isProduction()) {
     require("https").createServer({
       cert: fs.readFileSync("/etc/letsencrypt/live/utsc.tennisladder.ca/cert.pem", "utf8"),
       key: fs.readFileSync("/etc/letsencrypt/live/utsc.tennisladder.ca/privkey.pem", "utf8"),
@@ -144,7 +149,7 @@ router.put("/api/user/", (req, res, next) => {
       path: "/",
       maxAge: 60 * 60 * 24 * 31
   }));
-  res.status(200).end();
+  res.status(204).end();
 });
 
 // Sign in
