@@ -23,10 +23,11 @@ router.use(session({
   cookie: { secure: isProduction() },
   resave: false,
   saveUninitialized: true,
+  httpOnly: true,
   store: new NedbStore({ filename: 'db/sessions' })
 }));
 router.use(express.static(path.join(__dirname,
-  process.env.NODE_ENV === "production" ? "../client/build/" : "../client/public/")
+  isProduction() ? "../client/build/" : "../client/public/")
 ));
 router.use(logger("dev"));
 router.use(express.json());
