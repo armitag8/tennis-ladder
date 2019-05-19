@@ -46,6 +46,7 @@ class LadderView extends Component {
                     lastname={player.lastname}
                     wins={player.wins}
                     losses={player.losses}
+                    updatePlayers={this.updatePlayers}
                 />)}
         </div>);
     }
@@ -82,7 +83,7 @@ class PlayerRow extends Component {
                             user={this.props.user}
                             opponent={this.props._id} 
                             opponentName={this.props.firstname}
-                            onSubmit={this.updatePlayers}
+                            onSubmit={() => this.setState({edit: false}, this.props.updatePlayers)}
                         />}
                 </div>);
     }

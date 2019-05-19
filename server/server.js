@@ -191,9 +191,9 @@ router.get("/api/week/:number/", isAuthenticated, (req, res, next) => {
 
 router.post("/api/games/", isAuthenticated, (req, res, next) => {
   try {
-    console.log(req.body);
-    database.addGame(new Game(req.body))
-    .then(console.log).catch(error => res.status(error.code).send(error.message));
+    database.playGame(new Game(req.body))
+    .then(doc => res.json(doc))
+    .catch(error => res.status(error.code).send(error.message));
   } catch (e) {
     res.status(422).send(e.message);
   }

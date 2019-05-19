@@ -6,10 +6,12 @@ class Privacy extends Component{
     render(){
         return (
             <div className="rules">
+<h2>Our Privacy Policy</h2>
+    
 <p>Effective date: May 18, 2019</p>
 
 
-<p>Tennis Ladder ("us", "we", or "our") operates the tennisladder.ca website and the Tennis Ladder mobile application (hereinafter referred to as the "Service").</p>
+<p><a href="mailto:joe.armitage@mail.utoronto.ca">Joe Armitage</a> ("us", "we", or "our") operates the tennisladder.ca website (hereinafter referred to as the "Service").</p>
 
 <p>This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data. Our Privacy Policy  for Tennis Ladder is created with the help of the <a href="https://www.privacypolicies.com/free-privacy-policy-generator/">PrivacyPolicies.com Privacy Policy Generator</a>.</p>
 
@@ -24,7 +26,7 @@ class Privacy extends Component{
 
 <h4>Personal Data</h4>
 
-<p>While using our Service, we may ask you to provide us with certain personally identifiable information that can be used to contact or identify you ("Personal Data"). Personally identifiable information may include, but is not limited to:</p>
+<p>While using our Service, we will ask you to provide us with certain personally identifiable information that can be used to contact or identify you ("Personal Data"). Personally identifiable information may include, but is not limited to:</p>
 
 <ul>
 <li>Email address</li><li>First name and last name</li><li>Cookies and Usage Data</li>
@@ -43,7 +45,7 @@ class Privacy extends Component{
 <p>Examples of Cookies we use:</p>
 <ul>
     <li><strong>Session Cookies.</strong> We use Session Cookies to operate our Service.</li>
-    <li><strong>Preference Cookies.</strong> We use Preference Cookies to remember your preferences and various settings.</li>
+    <li><strong>Preference Cookies.</strong> We may (in future) use Preference Cookies to remember your preferences and various settings.</li>
     <li><strong>Security Cookies.</strong> We use Security Cookies for security purposes.</li>
 </ul>
 
@@ -106,7 +108,7 @@ class Privacy extends Component{
 <h2>Contact Us</h2>
 <p>If you have any questions about this Privacy Policy, please contact us:</p>
 <ul>
-    <li>By email: Joe@armitage.com</li>      
+    <li>By email: <a href="mailto:joe.armitage@mail.utoronto.ca">Joe Armitage</a></li>      
 </ul>
             </div>
         );

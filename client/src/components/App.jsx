@@ -12,12 +12,12 @@ class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            user: this.getAutheneticatedUser(), 
+            user: this.getAuthenticatedUser(), 
             view: "rules",
         };
     }
 
-    getAutheneticatedUser = () => decodeURIComponent(
+    getAuthenticatedUser = () => decodeURIComponent(
         document.cookie.replace(/(?:(?:^|.*;\s*)user\s*=\s*([^;]*).*$)|^.*$/, "$1") || null
     );
 

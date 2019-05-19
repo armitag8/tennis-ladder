@@ -99,7 +99,7 @@ let database = (function () {
 
     module.deleteUser = userID => console.log("delete: " + userID);
 
-    module.addGame = game => new Promise((resolve, reject) =>
+    module.scheduleGame = game => new Promise((resolve, reject) => 
         games.find({
             $or: [
                 { player1: game.player1, player2: game.player2 },
@@ -110,8 +110,26 @@ let database = (function () {
             if (err)
                 reject(DB_FAIL);
             else if (foundGames.length > 0)
+                reject(new HTTPError(409, "This game has already been scheduled"));
+            else
+                games.insert(game, err => err ? reject(DB_FAIL) : resolve(true));
+        })
+    );
+
+    module.playGame = game => new Promise((resolve, reject) =>
+        games.find({
+            $or: [
+                { player1: game.player1, player2: game.player2 },
+                { player1: game.player2, player2: game.player1 }
+            ],
+            week: game.week
+        }, (err, foundGames) => {
+            if (err)
+                reject(DB_FAIL);
+            else if (foundGames.length > 0 && foundGames[0].played)
                 reject(new HTTPError(409, "This game has already been played"));
             else {
+                let id = foundGames.length > 0 ? foundGames[0]._id : "this is not an id, probably";
                 let player1Wins = findWinner(game.score) === 1;
                 let winner = player1Wins ? game.player1 : game.player2;
                 let loser = player1Wins ? game.player2 : game.player1;
@@ -122,7 +140,7 @@ let database = (function () {
                         else if (foundUsers.length !== 2)
                             reject(new HTTPError(404, "Player(s) not found"));
                         else
-                            games.insert(game, () => {
+                            games.update({_id: id}, game, {upsert: true}, () => {
                                 users.update({ _id: winner }, { $inc: { wins: 1 } });
                                 users.update({ _id: loser }, { $inc: { losses: 1 } });
                                 if (foundUsers[0]._id === loser) {

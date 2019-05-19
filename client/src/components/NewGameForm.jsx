@@ -66,10 +66,13 @@ class NewGameForm extends Component {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(game)
-            }).then(response => response.ok ? this.props.onSubmit() : response.text().then(console.log));
+            }).then(response => 
+                response.ok ? this.props.onSubmit() : response.text().then(console.log))
+            .catch(console.log);
         } catch (e) {
             console.log(e.message);
         }
+        this.props.onSubmit();
     };
 
     render() {

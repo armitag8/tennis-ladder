@@ -55,7 +55,7 @@ describe("Game", () => {
     describe("Create", () => {
         it("Adds a game and checks that promise resolves true.", () => {
             return database.clearGames().then(
-                expect(database.addGame(game1)).resolves.toEqual(true));
+                expect(database.playGame(game1)).resolves.toEqual(true));
         });
     });
 });
