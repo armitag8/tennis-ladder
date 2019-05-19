@@ -3,10 +3,10 @@ import LoginScreen from "./LoginScreen";
 import LadderView from "./LadderView";
 import NavBar from "./NavBar";
 import GamesView from "./GamesView";
-import ProfileView from "./ProfileView";
 import "../style/Rules.css";
 import Rules from "./Rules";
 import Privacy from "./Privacy";
+//import ProfileView from "./ProfileView";
 
 class App extends Component {
     constructor(props) {

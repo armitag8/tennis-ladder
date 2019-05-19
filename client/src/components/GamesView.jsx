@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import '../style/LadderView.css';
-import NewGameForm from "./NewGameForm";
-import Button from './Button';
+//import NewGameForm from "./NewGameForm";
+//import Button from './Button';
 
 class LadderView extends Component {
     constructor(props) {
@@ -35,15 +35,11 @@ class LadderView extends Component {
             <div>
                 <section>
                     <h2>Upcoming Games</h2>
-                    {this.state.games.map(game => <div>
-                        <div>    
-                            Week: {game.week}
-                        </div>
-                        <div>
-                            Opponent: {game.player1 === this.props.user ?
-                                game.player2 : game.player1}
-                        </div>
-                    </div>)}
+                    {this.state.games.map(game => <GameRecord 
+                        key={"" + game.week + game.player1 + game.player2}
+                        week={game.week}
+                        opponent={game.player1 === this.props.user ? game.player2 : game.player1}
+                    />)}
                 </section>
             </div>);/*
                 <section>
@@ -72,7 +68,14 @@ class LadderView extends Component {
 
 class GameRecord extends Component {
     render() {
-        return (<div/>);
+        return <div>
+        <div>    
+            Week: {this.props.week}
+        </div>
+        <div>
+            Opponent: {this.props.opponent}
+        </div>
+    </div>;
     }
 }
 
