@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
+import config from "../config";
 import '../style/LoginScreen.css';
 import validator from 'validator';
 
-const OWNER = "UTSC";
 const User = (function () {
     return function (user) {
         this._id = user._id;
@@ -86,7 +86,7 @@ class LoginScreen extends Component {
     render() {
         return (
             <div className="login has-text-centered">
-                <h2>Welcome to {OWNER}'s Tennis Ladder</h2>
+                <h2>Welcome to {config.club}'s Tennis Ladder</h2>
                 <form className="login-form" onSubmit={this.onSubmit}>
                     {this.state.valid 
                         ? null 

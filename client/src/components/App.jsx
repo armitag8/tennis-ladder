@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import config from "../config.json";
+import config from "../config";
 import LoginScreen from "./LoginScreen";
 import LadderView from "./LadderView";
 import NavBar from "./NavBar";
