@@ -6,7 +6,7 @@ const installClient = () => require("child_process").spawn(
     });
 
 if (process.env.NODE_ENV !== "test")
-    require("fs").copyFile("config.json", "client/src/", err => {
+    require("fs").copyFile("config.json", "client/src/config.json", err => {
         if (err) throw err;
         installClient();
     });
