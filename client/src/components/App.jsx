@@ -61,7 +61,7 @@ class App extends Component {
             views.games = <GamesView user={this.state.user} logout={this.logout} onError={this.onError}/>;
             delete Object.assign(views, {"logout": views.login }).login;
         }
-        if (this.state.user === config.admin)
+        if (this.state.user === config.admin || config.mods.includes(this.state.user))
             views.admin = <Admin user={this.state.user} logout={this.logout} onError={this.onError}/>;
         return (
             <div>

@@ -10,6 +10,7 @@ const cookie = require("cookie");
 const database = require("./src/database.js");
 const NedbStore = require('connect-nedb-session')(session);
 const mailer = require("nodemailer");
+const schedule = require("node-schedule");
 
 const transporter = mailer.createTransport({
   service: "gmail",
@@ -19,12 +20,11 @@ const transporter = mailer.createTransport({
   }
 });
 
-const START_DATE = new Date("2019-05-19");
-const A_WEEK_IN_SECONDS = 7 * 24 * 60 * 60 * 1000;
+const WEEK_IN_SECONDS = 7 * 24 * 60 * 60 * 1000;
 
 const isProduction = () => process.env.NODE_ENV === "production";
 
-const thisWeek = () => Math.floor((new Date() - START_DATE) / A_WEEK_IN_SECONDS);
+const thisWeek = () => Math.floor((new Date() - new Date(config.startDate)) / WEEK_IN_SECONDS) + 1;
 
 const startServer = handler => {
   if (isProduction()) {
@@ -242,8 +242,8 @@ const inviteEmail = invite => `<h1>Welcome</h1>
   join or to learn more.
 </p>
 <p>
-<a href=${isProduction() ?   "https://" + config.publicURL : "http://localhost:3001"}/api/invite/${
-    encodeURIComponent(invite._id)}/${invite.code}>Join Now</a>
+<a href=${isProduction() ? "https://" + config.publicURL : "http://localhost:3001"}/api/invite/${
+  encodeURIComponent(invite._id)}/${invite.code}>Join Now</a>
 </p>
 <p>
   If you have received this email in error (you are not a patron of ${config.club}), please ignore it.
@@ -256,7 +256,7 @@ const inviteEmail = invite => `<h1>Welcome</h1>
 // Send Invite
 router.post("/api/invite/:_id", isMod, validateUserId, (req, res, next) =>
   database.inviteUser(req.params._id)
-    .then(invite => 
+    .then(invite =>
       transporter.sendMail({
         from: config.admin,
         to: req.params._id,
@@ -284,11 +284,18 @@ router.get("/api/invite/:_id/:code", validateUserId, (req, res, next) =>
 );
 
 const autoScheduleGames = () => {
-  database.scheduleGames(thisWeek());
-  setTimeout(() => autoScheduleGames(), A_WEEK_IN_SECONDS);
+  let recurrance = new schedule.RecurrenceRule();
+  recurrance.dayOfWeek = 1; // Monday
+  recurrance.hour = 13; // 1 PM (GMT => 8 AM EST)
+  recurrance.minute = 0;
+  schedule.scheduleJob(recurrance, () => database.scheduleGames(thisWeek()),
+    () => console.log(`scheduled games for week ${thisWeek()}`));
 }
 
 autoScheduleGames();
+
+if (! isProduction())
+  database.scheduleGames(thisWeek());
 
 database.inviteUser(config.admin, true).then(console.log).catch(console.log);
 
