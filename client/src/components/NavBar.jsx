@@ -46,6 +46,7 @@ class NavBar extends Component {
     }
 }
 
+
 class Tab extends Component {
     render() {
         let name = toTitleCase(this.props.name);

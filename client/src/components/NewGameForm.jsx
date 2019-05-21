@@ -67,12 +67,12 @@ class NewGameForm extends Component {
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify(game)
             }).then(response => 
-                response.ok ? this.props.onSubmit() : response.text().then(console.log))
-            .catch(console.log);
+                response.ok ? this.props.onSubmit() : response.text().then(
+                    err => this.onError(new Error(err))))
+            .catch(err => this.props.onError(new Error(err)));
         } catch (e) {
-            console.log(e.message);
+            this.props.onError(e);
         }
-        this.props.onSubmit();
     };
 
     render() {
@@ -87,7 +87,9 @@ class NewGameForm extends Component {
                             index="0"
                             alterScore={this.alterScore}
                             owner="Your"
-                        />-
+                        />
+                        
+                        <label>-</label>
                         <ScoreBox 
                             max="9"
                             score={this.state.score[1]}
@@ -105,7 +107,8 @@ class NewGameForm extends Component {
                                 index="2"
                                 alterScore={this.alterScore}
                                 owner="Your"
-                            />-
+                            />
+                            <label>-</label>
                             <ScoreBox 
                                 max="11"
                                 score={this.state.score[3]}

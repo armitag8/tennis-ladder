@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
-import '../style/LadderView.css';
+import '../style/GamesView.css';
 //import NewGameForm from "./NewGameForm";
 //import Button from './Button';
 
-class LadderView extends Component {
+class GamesView extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -79,4 +79,4 @@ class GameRecord extends Component {
     }
 }
 
-export default LadderView;
+export default GamesView;

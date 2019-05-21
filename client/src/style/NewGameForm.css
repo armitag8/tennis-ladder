@@ -12,21 +12,35 @@
     align-items: flex-end;
 }
 
-.score-box label{
-    margin-right: 7px;
+.score-box label:first-child{
+    margin-right: 15px;
 }
 
 .score-box input{
-    width: 120px;
+    width: 180px;
+    height: 40px;
+    border-radius: 10px;
+    padding: 5px;
 }
 
 .score-box{
+    display: flex;
+    flex-direction: row;
+    align-items: baseline;
     margin-top: 3px;
     margin-bottom: 3px;
     margin-right: 15px;
 }
 
-@media all and (min-width: 640px) {
+@media all and (max-width: 640px) {
+    .score-box {
+        flex-direction: column;
+    }
     .game-form {
+        justify-content: space-between;
+    }
+    
+    label {
+        display: none;
     }
 }

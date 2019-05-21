@@ -6,9 +6,11 @@ let database = (function () {
 
     const USERS_DB_FILE = "db/users.db";
     const GAMES_DB_FILE = "db/games.db";
+    const INVITES_DB_FILE = "db/invites.db";
 
     const users = new Datastore({ filename: USERS_DB_FILE, autoload: true });
     const games = new Datastore({ filename: GAMES_DB_FILE, autoload: true });
+    const invites = new Datastore({ filename: INVITES_DB_FILE, autoload: true });
 
     const HTTPError = function () {
         return function (code, message) {
@@ -69,6 +71,30 @@ let database = (function () {
         })
     );
 
+    module.inviteUser = email => new Promise((resolve, reject) => 
+        invites.count({ _id: email }, (err, count) => {
+            if (err) reject(DB_FAIL);
+            else if (count) reject(new HTTPError(409, "Invite already sent"));
+            else {
+                let invite = { 
+                    _id: email,
+                    code: crypto.randomBytes(64).toString("hex"),
+                    confirmed: false 
+                };
+                invites.insert(invite, err => err ? reject(DB_FAIL) : resolve(invite));
+            }
+        })
+    );
+
+    module.confirmInvite = (email, code) => new Promise((resolve, reject) => 
+        invites.findOne({ _id: email, code: code }, (err, invite) => {
+            if (err) reject(DB_FAIL);
+            else if (!invite) reject(new HTTPError(404, "Invite not found"));
+            else invites.update({ _id: email}, { $set: {confirmed: true} }, 
+                err => err ? reject(DB_FAIL) : resolve(true));
+        })
+    );
+
     module.addUser = user => new Promise((resolve, reject) =>
         users.count({}, (err, count) => err ? reject(DB_FAIL) : users.findOne({ _id: user._id },
             (err, foundUser) => {
@@ -76,8 +102,12 @@ let database = (function () {
                 newUser.password = saltAndHash(user.password);
                 newUser.position = count + 1;
                 if (err) reject(DB_FAIL);
-                else if (foundUser !== null) reject(new HTTPError(409, "User already exists"));
-                else users.insert(newUser, err => err ? reject(DB_FAIL) : resolve(true));
+                else if (foundUser) reject(new HTTPError(409, "User already exists"));
+                else invites.findOne({ _id: newUser._id, confirmed: true }, (err, foundInvite) => {
+                    if (err) reject(DB_FAIL);
+                    else if (! foundInvite) reject(new HTTPError(401, "No confirmed invite"));
+                    else users.insert(newUser, err => err ? reject(DB_FAIL) : resolve(true));
+                }); 
             })
         )
     );
@@ -91,26 +121,71 @@ let database = (function () {
         })
     );
 
-    const USERS_PER_PAGE = 50;
+    const USERS_PER_PAGE = 10;
     module.getUsers = (pageNumber) => new Promise((resolve, reject) =>
         users.find({}).sort({ position: 1 }).skip(USERS_PER_PAGE * pageNumber).limit(USERS_PER_PAGE)
             .exec((err, foundUsers) => err ? reject(DB_FAIL) : resolve(foundUsers))
     );
 
-    module.deleteUser = userID => console.log("delete: " + userID);
+    module.deleteUser = userID => new Promise((resolve, reject) => users.findOne(
+        { _id: userID }, (err, user) => {
+            if (err) reject(DB_FAIL)
+            else if (!user) reject(new HTTPError(404, "No user found with that email address"))
+            else users.remove(
+                { _id: userID }, err => err ? reject(DB_FAIL) : users.update(
+                    { position: { $gt: user.position } },
+                    { $inc: { position: -1 } },
+                    { multi: true },
+                    err => err ? console.log(err) || reject(DB_FAIL) : resolve(true)))
+        }));
 
-    module.scheduleGames = week => users.find({}, (err, users) => 
-        err ? console.log(err) : users.forEach((user, index) =>
-            index === 0 ? null : module.scheduleGame({
-                player1: user._id,
-                player2: users[index - 1]._id,
-                week: week,
-                played: false
-            }, users[index - 1]).then(
-                console.log).catch(console.log))
+    module.moveUser = (userID, position) => new Promise((resolve, reject) => users.findOne(
+        { _id: userID }, (err, user) => {
+            if (err) reject(DB_FAIL)
+            else if (!user) reject(new HTTPError(404, "No user found with that email address"))
+            else users.count({}, (err, count) => {
+                if (err) reject(DB_FAIL);
+                else if (position < 1 || count < position) reject(new HTTPError(422, "Invalid position"));
+                else if (position < user.position) users.update( // move up
+                    {
+                        $and: [
+                            { position: { $gte: position } },
+                            { position: { $lt: user.position } }
+                        ]
+                    },
+                    { $inc: { position: 1 } },
+                    { multi: true },
+                    err => err ? reject(DB_FAIL) :
+                        users.update({ _id: userID }, { $set: { position: position} }, err =>
+                            err ? reject(DB_FAIL) : resolve(true)));
+                else users.update( // move down
+                    {
+                        $and: [
+                            { position: { $lte: position } },
+                            { position: { $gt: user.position } }
+                        ]
+                    },
+                    { $inc: { position: -1 } },
+                    { multi: true },
+                    err => err ? reject(DB_FAIL) :
+                        users.update({ _id: userID }, { $set: { position: position} }, err =>
+                            err ? reject(DB_FAIL) : resolve(true)));
+            });
+        }));
+
+    module.scheduleGames = week => users.find({}, (err, users) =>
+        err ? console.log(err) : users.forEach((user, index) => {
+            if (index !== 0)
+                module.scheduleGame({
+                    player1: user._id,
+                    player2: users[index - 1]._id,
+                    week: week,
+                    played: false
+                }).then(console.log).catch(console.log);
+        })
     );
 
-    module.scheduleGame = game => new Promise((resolve, reject) => 
+    module.scheduleGame = game => new Promise((resolve, reject) =>
         games.find({
             $or: [
                 { player1: game.player1, player2: game.player2 },
@@ -158,19 +233,21 @@ let database = (function () {
                         else if (foundUsers.length !== 2)
                             reject(new HTTPError(404, "Player(s) not found"));
                         else
-                            games.update({_id: id}, game, {upsert: true}, () => {
+                            games.update({ _id: id }, game, { upsert: true }, () => {
                                 users.update({ _id: winner }, { $inc: { wins: 1 } });
                                 users.update({ _id: loser }, { $inc: { losses: 1 } });
                                 if (foundUsers[0]._id === loser) {
                                     users.update(
-                                        { $and: [
-                                            { position: { $gte: foundUsers[0].position } },
-                                            { position: { $lt: foundUsers[1].position } }
-                                        ] },
+                                        {
+                                            $and: [
+                                                { position: { $gte: foundUsers[0].position } },
+                                                { position: { $lt: foundUsers[1].position } }
+                                            ]
+                                        },
                                         { $inc: { position: 1 } },
                                         { multi: true },
                                         err => err ? reject(DB_FAIL) : users.update(
-                                            { _id: winner }, { $set : { position: foundUsers[0].position }}
+                                            { _id: winner }, { $set: { position: foundUsers[0].position } }
                                         ));
                                 }
                                 resolve(true)

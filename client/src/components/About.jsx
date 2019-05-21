@@ -1,11 +1,10 @@
 import React, { Component } from "react";
 
-class Rules extends Component{
-    componentDidMount = () => this.props.user ? null : this.props.logout();
+class About extends Component{
 
     render(){
         return (
-            <div className="rules">
+            <div className="about">
                 <h2>Welcome to the Tennis Ladder</h2>
                 <h3>Mission</h3>
                 <p>
@@ -31,7 +30,7 @@ class Rules extends Component{
                     <li>8-8, then tie-break: 10-8</li>
                     <li>8-8, then tie-break: 15-13</li>
                 </ul>
-                <h3>Questions</h3>
+                <h3>How to Join</h3>
                 <p>
                     Contact <a href="mailto:joe.armitage@mail.utoronto.ca">Joe Armitage</a>, 
                     or come chat with a court supervisor at the tennis courts.
@@ -41,4 +40,4 @@ class Rules extends Component{
     }
 }
 
-export default Rules;
+export default About;

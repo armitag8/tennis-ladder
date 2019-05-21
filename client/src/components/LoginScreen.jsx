@@ -18,9 +18,10 @@ const User = (function () {
 class LoginScreen extends Component {
     constructor(props) {
         super(props);
+        let invite = this.getInvite();
         this.state = {
-            mode: "Sign In",
-            _id: "",
+            mode: invite ? "Sign Up" : "Sign In",
+            _id: invite,
             password: "",
             password2: "",
             firstname: "",
@@ -29,6 +30,10 @@ class LoginScreen extends Component {
             error: Error("Please input your credentials")
         };
     }
+
+    getInvite = () => decodeURIComponent(
+        document.cookie.replace(/(?:(?:^|.*;\s*)invite\s*=\s*([^;]*).*$)|^.*$/, "$1")
+    );
 
     componentDidMount = this.props.logout;
 
@@ -92,7 +97,8 @@ class LoginScreen extends Component {
                             className="field input"
                             autoComplete="username"
                             placeholder="Email Address" 
-                            name="_id" 
+                            name="_id"
+                            value={this.state._id}
                             onChange={this.onUpdate}/>
                         <input 
                             className="field input"
@@ -100,7 +106,8 @@ class LoginScreen extends Component {
                                             "current-password" : "new-password"}
                             type="password" 
                             placeholder="Password" 
-                            name="password" 
+                            name="password"
+                            value={this.state.password}
                             onChange={this.onUpdate}/>
                         {this.state.mode === "Sign In" ? null :
                             <React.Fragment>
@@ -110,18 +117,21 @@ class LoginScreen extends Component {
                                     autoComplete="new-password"
                                     placeholder="Retype Password" 
                                     name="password2" 
+                                    value={this.state.password2}
                                     onChange={this.onUpdate}/>
                                 <input 
                                     className="field input" 
                                     autoComplete="given-name"
                                     placeholder="First Name" 
                                     name="firstname" 
+                                    value={this.state.firstname}
                                     onChange={this.onUpdate}/>
                                 <input 
                                     className="field input"
                                     autoComplete="family-name"
                                     placeholder="Last Name" 
                                     name="lastname" 
+                                    value={this.state.lastname}
                                     onChange={this.onUpdate}/>
                             </React.Fragment>
                         }

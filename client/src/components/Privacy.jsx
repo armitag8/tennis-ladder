@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 
 class Privacy extends Component{
-    componentDidMount = () => this.props.user ? null : this.props.logout();
 
     render(){
         return (
