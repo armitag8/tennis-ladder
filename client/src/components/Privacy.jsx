@@ -1,16 +1,16 @@
 import React, { Component } from "react";
+import config from "../config.json";
 
 class Privacy extends Component{
 
     render(){
         return (
-            <div className="rules">
-<h2>Our Privacy Policy</h2>
+            <div className="about">
+<h1>Our Privacy Policy</h1>
     
-<p>Effective date: May 18, 2019</p>
+<p>Effective date: May 21, 2019</p>
 
-
-<p><a href="mailto:joe.armitage@mail.utoronto.ca">Joe Armitage</a> ("us", "we", or "our") operates the tennisladder.ca website (hereinafter referred to as the "Service").</p>
+<p>{config.owner} ("us", "we", or "our") operates the tennisladder.ca website (hereinafter referred to as the "Service").</p>
 
 <p>This page informs you of our policies regarding the collection, use, and disclosure of personal data when you use our Service and the choices you have associated with that data. Our Privacy Policy  for Tennis Ladder is created with the help of the <a href="https://www.privacypolicies.com/free-privacy-policy-generator/">PrivacyPolicies.com Privacy Policy Generator</a>.</p>
 
@@ -43,9 +43,10 @@ class Privacy extends Component{
 <p>You can instruct your browser to refuse all cookies or to indicate when a cookie is being sent. However, if you do not accept cookies, you may not be able to use some portions of our Service. You can learn more how to manage cookies in the <a href="https://privacypolicies.com/blog/how-to-delete-cookies/">Browser Cookies Guide</a>.</p>
 <p>Examples of Cookies we use:</p>
 <ul>
-    <li><strong>Session Cookies.</strong> We use Session Cookies to operate our Service.</li>
+    <li><strong>Session Cookies.</strong> We use Session Cookies to operate our Service securely. Don't share your session id. It can be used to impersonate you.</li>
+    <li><strong>User Cookies.</strong> We use User Cookies for inter-session identification (keeps you logged in).</li>
+    <li><strong>Invitation Cookies.</strong> We use Invitation Cookies to verify that new users own trusted (invited) email addresses.</li>
     <li><strong>Preference Cookies.</strong> We may (in future) use Preference Cookies to remember your preferences and various settings.</li>
-    <li><strong>Security Cookies.</strong> We use Security Cookies for security purposes.</li>
 </ul>
 
 <h2>Use of Data</h2>
@@ -93,11 +94,6 @@ class Privacy extends Component{
 <p>We have no control over and assume no responsibility for the content, privacy policies or practices of any third party sites or services.</p>
 
 
-<h2>Children's Privacy</h2>
-<p>Our Service does not address anyone under the age of 18 ("Children").</p>
-<p>We do not knowingly collect personally identifiable information from anyone under the age of 18. If you are a parent or guardian and you are aware that your Children has provided us with Personal Data, please contact us. If we become aware that we have collected Personal Data from children without verification of parental consent, we take steps to remove that information from our servers.</p>
-
-
 <h2>Changes To This Privacy Policy</h2>
 <p>We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.</p>
 <p>We will let you know via email and/or a prominent notice on our Service, prior to the change becoming effective and update the "effective date" at the top of this Privacy Policy.</p>
@@ -107,7 +103,7 @@ class Privacy extends Component{
 <h2>Contact Us</h2>
 <p>If you have any questions about this Privacy Policy, please contact us:</p>
 <ul>
-    <li>By email: <a href="mailto:joe.armitage@mail.utoronto.ca">Joe Armitage</a></li>      
+    <li>By email: <a href="mailto:joe.armitage@mail.utoronto.ca">{config.owner}</a></li>      
 </ul>
             </div>
         );

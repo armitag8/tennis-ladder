@@ -1,3 +1,4 @@
+const config = require("../config.json");
 const express = require("express");
 const path = require("path");
 const logger = require("morgan");
@@ -8,8 +9,16 @@ const session = require("express-session");
 const cookie = require("cookie");
 const database = require("./src/database.js");
 const NedbStore = require('connect-nedb-session')(session);
+const mailer = require("nodemailer");
 
-const LADDER_MASTER = "joe.armitage@mail.utoronto.ca";
+const transporter = mailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: config.admin,
+    pass: config.password
+  }
+});
+
 const START_DATE = new Date("2019-05-19");
 const A_WEEK_IN_SECONDS = 7 * 24 * 60 * 60 * 1000;
 
@@ -36,23 +45,24 @@ const isAuthenticated = (req, res, next) =>
 const authenticate = (req, res) => {
   let user = req.params._id;
   req.session.user = user;
-  setUserCookie(user, res);res.setHeader("Set-Cookie", cookie.serialize(
-    "invite", 
+  setUserCookie(user, res); res.setHeader("Set-Cookie", cookie.serialize(
+    "invite",
     "",
     { path: "/", maxAge: 1 }
   ));
   res.json(user);
 };
 
-const setUserCookie = (user, res) => res.setHeader("Set-Cookie", 
+const setUserCookie = (user, res) => res.setHeader("Set-Cookie",
   cookie.serialize(
-    "user", 
-    user, 
+    "user",
+    user,
     { path: "/", maxAge: 60 * 60 * 24 * 31 }
   ));
 
-const isAdmin = (req, res, next) => req.session.user === LADDER_MASTER ? next() :
-  res.status(403).send("access denied: admin only");
+const isMod = (req, res, next) =>
+  req.session.user === config.admin || config.mods.includes(req.session.user) ? next() :
+    res.status(403).send("Access denied: moderators and administrator only");
 
 const sanitizeUser = (req, res, next) => {
   try {
@@ -170,7 +180,7 @@ router.put("/api/user/", (req, res, next) => {
 // Sign in
 router.put("/api/user/:_id", validateUserId, checkIdMatchesBody, (req, res, next) =>
   database.checkUser(req.body._id, req.body.password)
-    .then(result => result ? authenticate(req, res) : res.status(401).send("access denied"))
+    .then(result => result ? authenticate(req, res) : res.status(401).send("Access denied"))
     .catch(error => res.status(error.code).send(error.message))
 );
 
@@ -193,8 +203,8 @@ router.get("/api/user/", isAuthenticated, (req, res, next) => {
 // Remove User
 router.delete("/api/user/:_id", isAuthenticated, validateUserId, (req, res, next) => {
   let userID = req.params._id;
-  if (req.session.user !== LADDER_MASTER && userID !== req.user)
-    res.status(403).send("access denied");
+  if (!config.mods.concat([config.admin, userID]).includes(req.session.id))
+    res.status(403).send("Access denied");
   else
     database.deleteUser(userID)
       .then(x => res.json(x))
@@ -202,7 +212,7 @@ router.delete("/api/user/:_id", isAuthenticated, validateUserId, (req, res, next
 });
 
 // Move User into position (ADMIN)
-router.put("/api/user/:_id/position/:pos", isAdmin, validateUserId, (req, res, next) =>
+router.put("/api/user/:_id/position/:pos", isMod, validateUserId, (req, res, next) =>
   database.moveUser(req.params._id, Number.parseInt(req.params.pos))
     .then(x => res.json(x))
     .catch(error => res.status(error.code).send(error.message))
@@ -226,10 +236,36 @@ router.post("/api/games/", isAuthenticated, (req, res, next) => {
   }
 });
 
+const inviteEmail = invite => `<h1>Welcome</h1>
+<p>
+  You've been invited to join ${config.club}'s Tennis Ladder. Click the link below if you'd like to
+  join or to learn more.
+</p>
+<p>
+<a href=${isProduction() ?   "https://" + config.publicURL : "http://localhost:3001"}/api/invite/${
+    encodeURIComponent(invite._id)}/${invite.code}>Join Now</a>
+</p>
+<p>
+  If you have received this email in error (you are not a patron of ${config.club}), please ignore it.
+</p>
+<p>
+  You will receive no further emails regarding this offer, in accordance with CAN-SPAM regulations.
+</p>
+`
+
 // Send Invite
-router.post("/api/invite/:_id", isAdmin, validateUserId, (req, res, next) =>
+router.post("/api/invite/:_id", isMod, validateUserId, (req, res, next) =>
   database.inviteUser(req.params._id)
-    .then(invite => res.json(`${encodeURIComponent(invite._id)}/${invite.code}`))
+    .then(invite => 
+      transporter.sendMail({
+        from: config.admin,
+        to: req.params._id,
+        subject: "Join Our Tennis Ladder",
+        html: inviteEmail(invite)
+      }, (err, info) =>
+          err ? res.status(500).send("Email failure") : res.json(info.response)
+      )
+    )
     .catch(error => res.status(error.code).send(error.message))
 );
 
@@ -238,11 +274,11 @@ router.get("/api/invite/:_id/:code", validateUserId, (req, res, next) =>
   database.confirmInvite(req.params._id, req.params.code)
     .then(() => {
       res.setHeader("Set-Cookie", cookie.serialize(
-        "invite", 
+        "invite",
         req.params._id,
         { path: "/", maxAge: 60 * 30 }
       ));
-      res.redirect(isProduction() ? "/" : "localhost:3000");
+      res.redirect(isProduction() ? "/" : "http://localhost:3000/");
     })
     .catch(error => res.status(error.code).send(error.message))
 );
@@ -254,6 +290,6 @@ const autoScheduleGames = () => {
 
 autoScheduleGames();
 
-database.inviteUser(LADDER_MASTER).then(console.log).catch(console.log);
+database.inviteUser(config.admin, true).then(console.log).catch(console.log);
 
 startServer(router);

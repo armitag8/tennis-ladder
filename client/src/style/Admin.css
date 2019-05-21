@@ -1,14 +1,24 @@
-.errors{
-  width: 100%;
-  text-align: center;
-  text-emphasis: bold;
-  background: red;
-  position: fixed;
-  bottom: 0;
-  border-radius: 10px 10px 0px 0px;
+.admin{
+  display: flex;
+  height: 50px;
+  justify-content: center;
 }
 
-.error{
-  border-radius: 10px 10px 0px 0px;
-  border-top: 2px solid black;
+.admin *{
+  margin: 2px;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+@media all and (max-width: 640px) {
+  .admin{
+    flex-direction: column;
+    align-items: center;
+  }
+  .admin * {
+    width: 80%;
+  }
+  .admin input{
+    padding: 5px;
+  }
 }

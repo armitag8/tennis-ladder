@@ -68,3 +68,7 @@ db
 
 # Sick of merge conflicts preventing continuous deployment
 package-lock.json
+
+# Deployment specifics
+config.json
+

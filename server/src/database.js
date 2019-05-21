@@ -71,7 +71,7 @@ let database = (function () {
         })
     );
 
-    module.inviteUser = email => new Promise((resolve, reject) => 
+    module.inviteUser = (email, confirmed=false) => new Promise((resolve, reject) => 
         invites.count({ _id: email }, (err, count) => {
             if (err) reject(DB_FAIL);
             else if (count) reject(new HTTPError(409, "Invite already sent"));
@@ -79,7 +79,7 @@ let database = (function () {
                 let invite = { 
                     _id: email,
                     code: crypto.randomBytes(64).toString("hex"),
-                    confirmed: false 
+                    confirmed: confirmed 
                 };
                 invites.insert(invite, err => err ? reject(DB_FAIL) : resolve(invite));
             }

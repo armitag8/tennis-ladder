@@ -22,7 +22,7 @@ class GamesView extends Component {
         fetch("/api/games/scheduled/" + this.props.user)
         .then(response => {
             if (response.status === 200)
-                response.json().then(games => this.setState({ games: games }, console.log(games)));
+                response.json().then(games => this.setState({ games: games }));
             else if (response.status === 401) 
                 this.props.logout();
             else 
@@ -32,7 +32,7 @@ class GamesView extends Component {
 
     render() {
         return (
-            <div>
+            <div className="games">
                 <section>
                     <h2>Upcoming Games</h2>
                     {this.state.games.map(game => <GameRecord 
@@ -68,7 +68,7 @@ class GamesView extends Component {
 
 class GameRecord extends Component {
     render() {
-        return <div>
+        return <div className="game-record">
         <div>    
             Week: {this.props.week}
         </div>

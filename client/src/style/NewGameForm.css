@@ -40,7 +40,7 @@
         justify-content: space-between;
     }
     
-    label {
+    .game-form label {
         display: none;
     }
 }

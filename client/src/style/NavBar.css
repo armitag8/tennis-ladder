@@ -5,12 +5,6 @@
     align-items: center;
     padding-left: 17px;
     padding-right: 17px;
-    top: 0;
-    position: fixed;
-}
-
-.tab{
-    background: #6180EF;
 }
 
 .tabs{
@@ -62,6 +56,9 @@
         align-items: flex-end;
         justify-content: space-around;
         padding-top: 5px;
+        top: 0;
+        position: fixed;
+        background: white;
     }
 
     .navbar{
@@ -80,12 +77,12 @@
         border-left: 1px solid black; 
         border-right: 1px solid black; 
         border-radius: 10px 10px 0px 0px;
-        margin-bottom: 5px;
         padding: 5px;
     }
 
     .inactive{
         border-bottom: 1px solid black; 
+        background: #6180EF;
         opacity: 0.75;
     }
     

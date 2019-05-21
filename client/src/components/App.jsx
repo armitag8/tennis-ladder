@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import config from "../config.json";
 import LoginScreen from "./LoginScreen";
 import LadderView from "./LadderView";
 import NavBar from "./NavBar";
@@ -11,14 +12,13 @@ import Admin from "./Admin";
 import shortid from "shortid";
 //import ProfileView from "./ProfileView";
 
-const LADDER_MASTER = "joe.armitage@mail.utoronto.ca";
 
 class App extends Component {
     constructor(props) {
         super(props);
         this.state = {
             user: this.getAuthenticatedUser(), 
-            view: "about",
+            view: this.getInvite() ? "login" : "about",
             errors: []
         };
     }
@@ -28,6 +28,10 @@ class App extends Component {
 
     getAuthenticatedUser = () => decodeURIComponent(
         document.cookie.replace(/(?:(?:^|.*;\s*)user\s*=\s*([^;]*).*$)|^.*$/, "$1")
+    );
+
+    getInvite = () => decodeURIComponent(
+        document.cookie.replace(/(?:(?:^|.*;\s*)invite\s*=\s*([^;]*).*$)|^.*$/, "$1")
     );
 
     logout = () => {
@@ -57,7 +61,7 @@ class App extends Component {
             views.games = <GamesView user={this.state.user} logout={this.logout} onError={this.onError}/>;
             delete Object.assign(views, {"logout": views.login }).login;
         }
-        if (this.state.user === LADDER_MASTER)
+        if (this.state.user === config.admin)
             views.admin = <Admin user={this.state.user} logout={this.logout} onError={this.onError}/>;
         return (
             <div>
@@ -67,7 +71,7 @@ class App extends Component {
                     view={this.state.view}
                     views={Object.keys(views)}
                 />
-                {views[this.state.view]}
+                <div className="view">{views[this.state.view]}</div>
                 <div className="errors">
                     {this.state.errors.map(error => 
                         <Error key={shortid.generate()} message={error.message}/>)}

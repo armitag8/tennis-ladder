@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
+import config from "../config"
 import '../style/Admin.css';
 import validator from "validator";
 //import NewGameForm from "./NewGameForm";
 //import Button from './Button';
 
-const LADDER_MASTER = "joe.armitage@mail.utoronto.ca";
 const toTitleCase = string => string[0].toUpperCase() + string.slice(1);
 
 
@@ -30,7 +30,7 @@ class Admin extends Component {
     move = () =>
         fetch(`/api/user/${this.state.player}/position/${this.state.position}`, { method: "PUT" });
 
-    componentDidMount = () => this.props.user === LADDER_MASTER ? null : this.props.logout();
+    componentDidMount = () => this.props.user === config.admin ? null : this.props.logout();
 
     onUpdate = (event) => {
         let newState = {}
@@ -69,7 +69,7 @@ class Admin extends Component {
 
     render() {
         return (
-            <form onSubmit={e => { e.preventDefault(); this.applyAdministration(); }}>
+            <form className="admin" onSubmit={e => { e.preventDefault(); this.applyAdministration(); }}>
                 <select
                     name="action"
                     value={this.state.action}
