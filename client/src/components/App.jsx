@@ -61,7 +61,7 @@ class App extends Component {
         };
         if (this.state.user) {
             views.ranking = <LadderView user={this.state.user} logout={this.logout} onError={this.onError}/>;
-            views.games = <GamesView user={this.state.user} logout={this.logout} onError={this.onError}/>;
+            views.matches = <GamesView user={this.state.user} logout={this.logout} onError={this.onError}/>;
             delete Object.assign(views, {"logout": views.login }).login;
         }
         if (this.state.user === config.admin || config.mods.includes(this.state.user))

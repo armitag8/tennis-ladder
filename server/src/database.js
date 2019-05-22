@@ -223,7 +223,6 @@ let database = (function () {
                     game => game.player1 === player ? game.player2 : game.player1);
                 users.find({ _id: { $in: opponents } }, (err, players) => {
                     if (err) reject(DB_FAIL);
-                    console.log(players);
                     resolve(players.map(removePassword));
                 });
             };
@@ -250,6 +249,7 @@ let database = (function () {
                 let loser = player1Wins ? game.player2 : game.player1;
                 users.find({ $or: [{ _id: winner }, { _id: loser }] }).sort({ position: 1 }).exec(
                     (err, foundUsers) => {
+                        game.played = true;
                         if (err)
                             reject(DB_FAIL);
                         else if (foundUsers.length !== 2)

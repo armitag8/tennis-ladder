@@ -148,9 +148,9 @@ class Game {
       return true;
     else if (s1 === 9 && s0 === 7)
       return true;
-    else if (s0 === 8 && s1 === 8 && s2 - s3 >= 2 && s2 > 10 && s3 > 0)
+    else if (s0 === 8 && s1 === 8 && s2 - s3 >= 2 && s2 > 9 && s3 > 0)
       return true;
-    else if (s0 === 8 && s1 === 8 && s3 - s2 >= 2 && s3 > 10 && s2 > 0)
+    else if (s0 === 8 && s1 === 8 && s3 - s2 >= 2 && s3 > 9 && s2 > 0)
       return true;
     else
       return false;
@@ -230,12 +230,38 @@ router.get("/api/games/scheduled/:_id", isAuthenticated, validateUserId, (req, r
     .catch(error => res.status(error.code).send(error.message))
 );
 
+const gamePlayedEmail = game => (
+`
+<h2>Match Recorded</h2>
+<p>A match has been recorded:</p>
+<h3>Score<h3>
+<ol>
+  <li>${game.player1}: ${game.score[0]}</li>
+  <li>${game.player2}: ${game.score[1]}</li>
+</ol>
+${game.score.length < 3 ? "" : `
+<h4>Tiebreak</h4>
+<ol>
+  <li>${game.player1}: ${game.score[2]}</li>
+  <li>${game.player2}: ${game.score[3]}</li>
+</ol>`}
+`
+);
+
 // Record Game
 router.post("/api/games/", isAuthenticated, (req, res, next) => {
   try {
-    database.playGame(new Game(req.body))
-      .then(doc => res.json(doc))
-      .catch(error => res.status(error.code).send(error.message));
+    let game = new Game(req.body);
+    database.playGame(game)
+      .then(ok => {
+        transporter.sendMail({   
+          from: config.admin,
+          to: `${game.player1}, ${game.player2}`,
+          subject: "New Match Score",
+          html: gamePlayedEmail(game)
+        }, (err, info) =>
+            err ? res.status(500).send("Email failure") : res.json(info.response));
+      }).catch(error => res.status(error.code).send(error.message));
   } catch (e) {
     res.status(422).send(e.message);
   }
@@ -288,7 +314,7 @@ router.get("/api/invite/:_id/:code", validateUserId, (req, res, next) =>
     .catch(error => res.status(error.code).send(error.message))
 );
 
-const gameEmail = game => (
+const gameScheduledEmail = game => (
 `
 <h2>New Match: Week ${game.week}</h2>
 <p>
@@ -317,7 +343,7 @@ const sendGameNotification = game => {
     from: config.admin,
     to: `${game.player1}, ${game.player2}`,
     subject: "Match Scheduled",
-    html: gameEmail(game)
+    html: gameScheduledEmail(game)
   }, (err, info) => err ? console.log(err) : console.log(info.response))
 }
 

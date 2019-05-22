@@ -29,9 +29,9 @@ class Game{
             return true;
         else if (s1 === 9 && s0 === 7)
             return true;
-        else if (s0 === 8 && s1 === 8 && s2 - s3 >= 2 && s2 > 10 && s3 > 0)
+        else if (s0 === 8 && s1 === 8 && s2 - s3 >= 2 && s2 > 9 && s3 > 0)
             return true;
-        else if (s0 === 8 && s1 === 8 && s3 - s2 >= 2 && s3 > 10 && s2 > 0)
+        else if (s0 === 8 && s1 === 8 && s3 - s2 >= 2 && s3 > 9 && s2 > 0)
             return true;
         else
             return false;

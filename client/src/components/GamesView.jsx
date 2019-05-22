@@ -35,7 +35,7 @@ class GamesView extends Component {
         return (
             <div className="games">
                 <section>
-                    <h2>Upcoming Games</h2>
+                    <h2>Upcoming Matches</h2>
                     {this.state.scheduledGames.map(player => 
                         <PlayerRow 
                             user={this.props.user}
@@ -54,7 +54,7 @@ class GamesView extends Component {
                         />)}
                 </section>
                 <section>
-                    <h2>Past Games</h2>
+                    <h2>Past Matches</h2>
                     <form className="game-search">
                         <div className="search-box">
                             <input type="search" placeholder="Search for games"/>
