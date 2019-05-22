@@ -231,7 +231,7 @@ router.get("/api/games/scheduled/:_id", isAuthenticated, validateUserId, (req, r
 );
 
 const gamePlayedEmail = game => (
-`
+  `
 <h2>Match Recorded</h2>
 <p>A match has been recorded:</p>
 <h3>Score<h3>
@@ -254,7 +254,7 @@ router.post("/api/games/", isAuthenticated, (req, res, next) => {
     let game = new Game(req.body);
     database.playGame(game)
       .then(ok => {
-        transporter.sendMail({   
+        transporter.sendMail({
           from: config.admin,
           to: `${game.player1}, ${game.player2}`,
           subject: "New Match Score",
@@ -315,7 +315,7 @@ router.get("/api/invite/:_id/:code", validateUserId, (req, res, next) =>
 );
 
 const gameScheduledEmail = game => (
-`
+  `
 <h2>New Match: Week ${game.week}</h2>
 <p>
   A new match has been scheduled this week between the two recipients of this email:
@@ -362,6 +362,16 @@ autoScheduleGames();
 if (!isProduction())
   database.scheduleGames(thisWeek(), sendGameNotification);
 
-database.inviteUser(config.admin, true).then(console.log).catch(console.log);
+database.inviteUser(config.admin, true)
+  .then(() => database.addUser(new User({
+    _id: config.admin,
+    firstname: config.owner.split(" ")[0],
+    lastname: config.owner.split(" ")[1],
+    password: passwords.email,
+    position: 1,
+    wins: 0,
+    losses: 0
+  })).then(console.log)
+  ).catch(console.log);
 
 startServer(router);
