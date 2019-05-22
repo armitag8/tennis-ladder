@@ -1,4 +1,5 @@
 const config = require("../config.json");
+const passwords = require("./src/passwords.json");
 const express = require("express");
 const path = require("path");
 const logger = require("morgan");
@@ -16,7 +17,7 @@ const transporter = mailer.createTransport({
   service: "gmail",
   auth: {
     user: config.admin,
-    pass: config.password
+    pass: passwords.email
   }
 });
 

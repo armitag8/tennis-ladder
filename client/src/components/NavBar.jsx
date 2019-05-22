@@ -5,10 +5,6 @@ import Button from "./Button";
 const toTitleCase = string => string[0].toUpperCase() + string.slice(1);
 
 class NavBar extends Component {
-    constructor(props){
-        super(props);
-        this.state = {nav: false};
-    }
 
     render() {
         return (
