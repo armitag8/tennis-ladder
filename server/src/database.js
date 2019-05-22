@@ -34,6 +34,11 @@ let database = (function () {
 
     const isCorrectPassword = (fromDB, given) => fromDB.hash === hashWithSalt(given, fromDB.salt);
 
+    const removePassword = user => {
+        delete user["password"];
+        return user;
+    };
+
     const findWinner = score => {
         let s0 = score[0];
         let s1 = score[1];
@@ -71,26 +76,26 @@ let database = (function () {
         })
     );
 
-    module.inviteUser = (email, confirmed=false) => new Promise((resolve, reject) => 
+    module.inviteUser = (email, confirmed = false) => new Promise((resolve, reject) =>
         invites.count({ _id: email }, (err, count) => {
             if (err) reject(DB_FAIL);
             else if (count) reject(new HTTPError(409, "Invite already sent"));
             else {
-                let invite = { 
+                let invite = {
                     _id: email,
                     code: crypto.randomBytes(64).toString("hex"),
-                    confirmed: confirmed 
+                    confirmed: confirmed
                 };
                 invites.insert(invite, err => err ? reject(DB_FAIL) : resolve(invite));
             }
         })
     );
 
-    module.confirmInvite = (email, code) => new Promise((resolve, reject) => 
+    module.confirmInvite = (email, code) => new Promise((resolve, reject) =>
         invites.findOne({ _id: email, code: code }, (err, invite) => {
             if (err) reject(DB_FAIL);
             else if (!invite) reject(new HTTPError(404, "Invite not found"));
-            else invites.update({ _id: email}, { $set: {confirmed: true} }, 
+            else invites.update({ _id: email }, { $set: { confirmed: true } },
                 err => err ? reject(DB_FAIL) : resolve(true));
         })
     );
@@ -105,9 +110,9 @@ let database = (function () {
                 else if (foundUser) reject(new HTTPError(409, "User already exists"));
                 else invites.findOne({ _id: newUser._id, confirmed: true }, (err, foundInvite) => {
                     if (err) reject(DB_FAIL);
-                    else if (! foundInvite) reject(new HTTPError(401, "No confirmed invite"));
+                    else if (!foundInvite) reject(new HTTPError(401, "No confirmed invite"));
                     else users.insert(newUser, err => err ? reject(DB_FAIL) : resolve(true));
-                }); 
+                });
             })
         )
     );
@@ -117,14 +122,14 @@ let database = (function () {
         users.findOne({ _id: userID }, (err, user) => {
             if (err) reject(DB_FAIL)
             else if (null === user) reject(new HTTPError(404, "No user found with that email address"));
-            else resolve(user);
+            else resolve(removePassword(user));
         })
     );
 
     const USERS_PER_PAGE = 10;
     module.getUsers = (pageNumber) => new Promise((resolve, reject) =>
         users.find({}).sort({ position: 1 }).skip(USERS_PER_PAGE * pageNumber).limit(USERS_PER_PAGE)
-            .exec((err, foundUsers) => err ? reject(DB_FAIL) : resolve(foundUsers))
+            .exec((err, foundUsers) => err ? reject(DB_FAIL) : resolve(foundUsers.map(removePassword)))
     );
 
     module.deleteUser = userID => new Promise((resolve, reject) => users.findOne(
@@ -156,7 +161,7 @@ let database = (function () {
                     { $inc: { position: 1 } },
                     { multi: true },
                     err => err ? reject(DB_FAIL) :
-                        users.update({ _id: userID }, { $set: { position: position} }, err =>
+                        users.update({ _id: userID }, { $set: { position: position } }, err =>
                             err ? reject(DB_FAIL) : resolve(true)));
                 else users.update( // move down
                     {
@@ -168,20 +173,25 @@ let database = (function () {
                     { $inc: { position: -1 } },
                     { multi: true },
                     err => err ? reject(DB_FAIL) :
-                        users.update({ _id: userID }, { $set: { position: position} }, err =>
+                        users.update({ _id: userID }, { $set: { position: position } }, err =>
                             err ? reject(DB_FAIL) : resolve(true)));
             });
         }));
 
-    module.scheduleGames = week => users.find({}, (err, users) =>
+    module.scheduleGames = (week, sendEmail) => users.find({}, (err, users) =>
         err ? console.log(err) : users.forEach((user, index) => {
-            if (index !== 0)
-                module.scheduleGame({
+            if (index !== 0){
+                let game = {
                     player1: user._id,
                     player2: users[index - 1]._id,
                     week: week,
                     played: false
-                }).then(console.log).catch(console.log);
+                };
+                module.scheduleGame(game)
+                    .then(() => sendEmail(game))
+                    .catch(console.log);
+            }
+                
         })
     );
 
@@ -202,12 +212,24 @@ let database = (function () {
         })
     );
 
-    module.getScheduledGames = player => new Promise((resolve, reject) =>
+    module.getScheduledGames = player => new Promise((resolve, reject) => {
         games.find({
             $or: [{ player1: player }, { player2: player }],
             played: false
-        }, (err, foundGames) => err ? reject(DB_FAIL) : resolve(foundGames))
-    );
+        }, (err, foundGames) => {
+            if (err) reject(DB_FAIL)
+            else {
+                let opponents = foundGames.map(
+                    game => game.player1 === player ? game.player2 : game.player1);
+                users.find({ _id: { $in: opponents } }, (err, players) => {
+                    if (err) reject(DB_FAIL);
+                    console.log(players);
+                    resolve(players.map(removePassword));
+                });
+            };
+        });
+    });
+
 
     module.playGame = game => new Promise((resolve, reject) =>
         games.find({

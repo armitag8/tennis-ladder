@@ -10,32 +10,27 @@ class NavBar extends Component {
         this.state = {nav: false};
     }
 
-    hideNav = () => this.setState(s => ({nav: ! s.nav}));
-
     render() {
         return (
             <React.Fragment>
                 <div className="navbar">
                     <div className="burger">
                         <Button 
-                            icon={this.state.nav ? "icono-cross" : "icono-hamburger"}
-                            onClick={this.hideNav}
+                            icon={this.props.nav ? "icono-cross" : "icono-hamburger"}
+                            onClick={this.props.hideNav}
                         />
                     </div>
                     <div className="title">
                         <h1>{toTitleCase(this.props.view)}</h1>
                     </div>
                 </div>
-                <div className={this.state.nav ? "sidebar" : "hidden-sidebar"}>
+                <div className={this.props.nav ? "sidebar" : "hidden-sidebar"}>
                     <div className="tabs">
                         {this.props.views.map(tab =>
                             <Tab
                                 key={tab}
                                 name={tab}
-                                changeView={name => {
-                                    this.hideNav();
-                                    this.props.changeView(name);
-                                }}
+                                changeView={this.props.changeView}
                                 active={this.props.view === tab}
                             />
                         )}

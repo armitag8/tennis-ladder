@@ -7,3 +7,24 @@
 .games{
     margin: 7px;
 }
+
+.game-search{
+    width: 90%;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-evenly;
+}
+
+.search-box {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.search-box input{
+    width: 80%;
+    height: 40px;
+    border-radius: 10px;
+    padding: 5px;
+}
+

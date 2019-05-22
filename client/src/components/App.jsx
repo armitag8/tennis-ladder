@@ -19,9 +19,12 @@ class App extends Component {
         this.state = {
             user: this.getAuthenticatedUser(), 
             view: this.getInvite() ? "login" : "about",
-            errors: []
+            errors: [],
+            nav: false
         };
     }
+    
+    hideNav = () => this.setState(s => ({nav: ! s.nav}));
 
     onError = error => this.setState(state => ({ errors: state.errors.concat([error])}), () =>
         setTimeout(() => this.setState(state => ({ errors: state.errors.slice(1)})), 5000));
@@ -66,12 +69,16 @@ class App extends Component {
         return (
             <div>
                 <NavBar 
+                    nav={this.state.nav}
                     changeView={this.switchView} 
                     logout={this.logout} 
                     view={this.state.view}
                     views={Object.keys(views)}
+                    hideNav={this.hideNav}
                 />
-                <div className="view">{views[this.state.view]}</div>
+                <div onClick={() => this.setState({ nav: false })} className="view">
+                    {views[this.state.view]
+                }</div>
                 <div className="errors">
                     {this.state.errors.map(error => 
                         <Error key={shortid.generate()} message={error.message}/>)}

@@ -21,23 +21,29 @@
         display: block;
     }
 
-    .active{
-        display: none;
+    .active {
+        font-weight: bold;
+        margin-top: 12px;
     }
 
     .navbar {
         border-bottom: 1px solid black;
         background: #6180EF;
-        opacity: 0.95;
     }
 
     .tabs {
         background: #6180EF;
-        opacity: 0.95;
         position: absolute;
         float: left;
         z-index: 99;
         font-size: 200%;
+    }
+
+    .tab{
+        margin-left: 5px;
+        padding: 2px;
+        border-bottom: 1px solid black;
+        border-radius: 0px 0px 10px 0px;
     }
 
 }

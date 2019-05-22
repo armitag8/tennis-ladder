@@ -39,8 +39,12 @@ const startServer = handler => {
   } else require("http").createServer(handler).listen(3001);
 }
 
-const isAuthenticated = (req, res, next) =>
-  req.session.user ? next() : res.status(401).end("Access Denied");
+const isAuthenticated = (req, res, next) => {
+  if (req.session.user) {
+    setUserCookie(req.session.user, res);
+    next()
+  } else res.status(401).end("Access Denied");
+};
 
 const authenticate = (req, res) => {
   let user = req.params._id;
@@ -236,7 +240,7 @@ router.post("/api/games/", isAuthenticated, (req, res, next) => {
   }
 });
 
-const inviteEmail = invite => `<h1>Welcome</h1>
+const inviteEmail = invite => `<h2>Welcome</h2>
 <p>
   You've been invited to join ${config.club}'s Tennis Ladder. Click the link below if you'd like to
   join or to learn more.
@@ -283,19 +287,53 @@ router.get("/api/invite/:_id/:code", validateUserId, (req, res, next) =>
     .catch(error => res.status(error.code).send(error.message))
 );
 
+const gameEmail = game => (
+`
+<h2>New Match: Week ${game.week}</h2>
+<p>
+  A new match has been scheduled this week between the two recipients of this email:
+</p>
+<ol>
+  <li><a href="mailto:${game.player1}">${game.player1}</a></li>
+  <li><a href="mailto:${game.player2}">${game.player2}</a></li>
+</ol>
+<p>
+  Please, if possible, arrange a time to play when is convenient for both of you.
+</p>
+<p>
+  Visit <a href="${config.publicURL}"">The Website</a> for more information and to record 
+  the score once the match has been played.
+</p>
+<p>
+  Reminder: playing no games in a week may affect your ranking in the ladder. 
+  Missing too many weeks may result in your removal from the ladder.
+</p>
+`
+);
+
+const sendGameNotification = game => {
+  transporter.sendMail({
+    from: config.admin,
+    to: `${game.player1}, ${game.player2}`,
+    subject: "Match Scheduled",
+    html: gameEmail(game)
+  }, (err, info) => err ? console.log(err) : console.log(info.response))
+}
+
+
 const autoScheduleGames = () => {
   let recurrance = new schedule.RecurrenceRule();
   recurrance.dayOfWeek = 1; // Monday
   recurrance.hour = 13; // 1 PM (GMT => 8 AM EST)
   recurrance.minute = 0;
-  schedule.scheduleJob(recurrance, () => database.scheduleGames(thisWeek()),
+  schedule.scheduleJob(recurrance, () => database.scheduleGames(thisWeek(), sendGameNotification),
     () => console.log(`scheduled games for week ${thisWeek()}`));
 }
 
 autoScheduleGames();
 
-if (! isProduction())
-  database.scheduleGames(thisWeek());
+if (!isProduction())
+  database.scheduleGames(thisWeek(), sendGameNotification);
 
 database.inviteUser(config.admin, true).then(console.log).catch(console.log);
 

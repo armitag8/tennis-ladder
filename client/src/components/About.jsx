@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import config from "../config";
+import EmailCaptcha from "./EmailCaptcha";
 
 class About extends Component {
 
@@ -45,9 +46,9 @@ class About extends Component {
                 </p>
                 <h2>How to Join</h2>
                 <p>
-                    Contact <a href={`mailto:${"joe.armitage@mail.utoronto.ca"}`}>{config.owner}</a>,
-                    or come chat with a court supervisor at the tennis courts.
+                    Ask a court supervisor at {config.club} or contact:
                 </p>
+                <EmailCaptcha />
                 <p>
                     This ladder can only be joined by invitation, merely to protect your data
                     on the web. Invitations are typically granted for any members (or paying guests)

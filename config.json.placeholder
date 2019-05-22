@@ -1,0 +1,9 @@
+{
+    "owner": "Your Name",
+    "admin": "your@email.com",
+    "password": "passw",
+    "mods": ["employee@email.com"],
+    "startDate": "2019-XX-XX",
+    "publicURL": "your.public.domain",
+    "club": "Your Club's Name"
+}
