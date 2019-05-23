@@ -19,7 +19,7 @@ class About extends Component {
                     finding time to play at least one match per week.
                     This is only fair to the other players in the ladder.
                     Usually, two matches are scheduled for each player each week,
-                    but your ranking will only be affected if one plays neither.
+                    but your ranking will only be affected if you play neither.
                 </p>
                 <h2>Match Structure</h2>
                 <p>
