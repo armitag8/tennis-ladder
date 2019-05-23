@@ -1,5 +1,5 @@
 const config = require("../config.json");
-const passwords = require("./src/passwords.json");
+const credentials = require("./credentials.json");
 const express = require("express");
 const path = require("path");
 const logger = require("morgan");
@@ -17,9 +17,12 @@ const transporter = mailer.createTransport({
   service: "gmail",
   auth: {
     user: config.admin,
-    pass: passwords.email
+    pass: credentials.email
   }
 });
+console.log(config.admin);
+console.log(credentials.email);
+
 
 const WEEK_IN_SECONDS = 7 * 24 * 60 * 60 * 1000;
 
@@ -50,17 +53,29 @@ const isAuthenticated = (req, res, next) => {
 const authenticate = (req, res) => {
   let user = req.params._id;
   req.session.user = user;
-  setUserCookie(user, res); res.setHeader("Set-Cookie", cookie.serialize(
+  setUserCookie(user, res); 
+  res.setHeader("Set-Cookie", cookie.serialize(
     "invite",
     "",
     { path: "/", maxAge: 1 }
   ));
+  if (isMod(req))  
+    res.setHeader("Set-Cookie", cookie.serialize(
+      "mod",
+      "true",
+      { path: "/", maxAge: 60 * 60 * 24 * 31 }
+    ));
   res.status(201).send();
 };
 
 const unAuthenticate = (req, res, next) => {
   req.session.user = null;
   setUserCookie("", res);
+  res.setHeader("Set-Cookie", cookie.serialize(
+    "mod",
+    "",
+    { path: "/", maxAge: 60 * 60 * 24 * 31 }
+  ));
   res.status(204).end();
 }
 
@@ -69,15 +84,15 @@ const setUserCookie = (user, res) => res.setHeader("Set-Cookie",
     "user",
     user,
     { path: "/", maxAge: 60 * 60 * 24 * 31 }
-  ));
+  )); 
 
-const isMod = (req, res, next) =>
-  req.session.user === config.admin || config.mods.includes(req.session.user) ? next() :
-    res.status(403).send("Access denied: moderators and administrator only");
+const isMod = (req) => req.session.user === config.admin || credentials.mods.includes(req.session.user);
 
-const isOwnerOrMod = (req, res, next) =>
-  config.mods.concat([config.admin, req.params._id]).includes(req.session.user) ?
-    next() : res.status(403).send("Access denied");
+const checkMod = (req, res, next) =>
+  isMod(req) ? next() : res.status(403).send("Access denied: moderators and administrator only");
+
+const checkOwnerOrMod = (req, res, next) =>
+  isMod(req) || req.params._id === req.session.user ? next() : res.status(403).send("Access denied");
 
 const sanitizeUser = (req, res, next) => {
   try {
@@ -212,7 +227,7 @@ router.get("/api/user/", isAuthenticated, (req, res, next) => {
 });
 
 // Remove User
-router.delete("/api/user/:_id", isAuthenticated, validateUserId, isOwnerOrMod, (req, res, next) => {
+router.delete("/api/user/:_id", isAuthenticated, validateUserId, checkOwnerOrMod, (req, res, next) => {
   let userID = req.params._id;
   if (userID === config.admin)
     res.status(422).send("Cannot delete administrator");
@@ -223,14 +238,14 @@ router.delete("/api/user/:_id", isAuthenticated, validateUserId, isOwnerOrMod, (
 });
 
 // Move User into position (ADMIN)
-router.put("/api/user/:_id/position/:pos", isMod, validateUserId, (req, res, next) =>
+router.put("/api/user/:_id/position/:pos", checkMod, validateUserId, (req, res, next) =>
   database.moveUser(req.params._id, Number.parseInt(req.params.pos))
     .then(x => res.status(200).send())
     .catch(error => res.status(error.code).send(error.message))
 );
 
 // Modify User
-router.patch("/api/user/:_id", isAuthenticated, validateUserId, isOwnerOrMod, (req, res, next) => {
+router.patch("/api/user/:_id", isAuthenticated, validateUserId, checkOwnerOrMod, (req, res, next) => {
   let firstname = req.body.firstname;
   let lastname = req.body.lastname;
   if ((! firstname || validator.isAlpha(firstname)) && (! lastname || validator.isAlpha(lastname)))
@@ -309,7 +324,7 @@ const inviteEmail = invite => `<h2>Welcome</h2>
 `
 
 // Send Invite
-router.post("/api/invite/:_id", isMod, validateUserId, (req, res, next) =>
+router.post("/api/invite/:_id", checkMod, validateUserId, (req, res, next) =>
   database.inviteUser(req.params._id)
     .then(invite =>
       transporter.sendMail({
@@ -317,7 +332,7 @@ router.post("/api/invite/:_id", isMod, validateUserId, (req, res, next) =>
         to: req.params._id,
         subject: "Join Our Tennis Ladder",
         html: inviteEmail(invite)
-      }, err => err ? res.status(500).send("Email failure") : res.status(201).send())
+      }, err => err ? console.log(err) && res.status(500).send("Email failure") : res.status(201).send())
     ).catch(error => res.status(error.code).send(error.message))
 );
 
@@ -388,7 +403,7 @@ database.inviteUser(config.admin, true)
     _id: config.admin,
     firstname: config.owner.split(" ")[0],
     lastname: config.owner.split(" ")[1],
-    password: passwords.email,
+    password: credentials.email,
     position: 1,
     wins: 0,
     losses: 0

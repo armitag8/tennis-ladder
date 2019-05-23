@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import config from "../config";
 import LoginScreen from "./LoginScreen";
 import LadderView from "./LadderView";
 import NavBar from "./NavBar";
@@ -37,6 +36,10 @@ class App extends Component {
         document.cookie.replace(/(?:(?:^|.*;\s*)invite\s*=\s*([^;]*).*$)|^.*$/, "$1")
     );
 
+    isMod = () => Boolean(decodeURIComponent(
+        document.cookie.replace(/(?:(?:^|.*;\s*)mod\s*=\s*([^;]*).*$)|^.*$/, "$1")
+    ));
+
     logout = () => {
         fetch(new Request("/api/user/", {
             method: "PUT",
@@ -54,7 +57,7 @@ class App extends Component {
 
     render = () => {
         let views = {};
-        if (this.state.user === config.admin || config.mods.includes(this.state.user))
+        if (this.isMod())
             views.admin = <Admin user={this.state.user} logout={this.logout} onError={this.onError}/>;
         views.login = <LoginScreen onAuthenticate={this.authenticate} logout={this.logout}/>;
         views.about = <About user={this.state.user} logout={this.logout}/>;

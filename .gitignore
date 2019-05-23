@@ -71,5 +71,5 @@ package-lock.json
 
 # Deployment specifics
 config.json
-passwords.json
+credentials.json
 
