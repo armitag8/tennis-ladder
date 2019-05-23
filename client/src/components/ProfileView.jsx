@@ -57,7 +57,7 @@ class ProfileView extends Component {
             lastname: this.state.lastname,
             password: this.state.password
         })
-    }).then(response => response.status === 200 ? this.setState({}) :
+    }).then(response => response.status === 200 ? this.setState(this.blank) :
         response.text().then(err => this.props.onError(new Error(err))
         )).catch(this.props.onError);
 
