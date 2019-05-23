@@ -86,14 +86,14 @@ class LoginScreen extends Component {
     render() {
         return (
             <div className="login has-text-centered">
-                <h2>Welcome to {config.club}'s Tennis Ladder</h2>
+                <h2>Welcome to {config.club}'s Ladder</h2>
                 <form className="login-form" onSubmit={this.onSubmit}>
                     {this.state.valid 
                         ? null 
                         : <output className="has-text-grey is-size-7">{this.state.error.message}</output>}
                     <div className="inputFields">
                         <input 
-                            type="email"
+                            type="emailfield"
                             className="field input"
                             autoComplete="username"
                             placeholder="Email Address" 

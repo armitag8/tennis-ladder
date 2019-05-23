@@ -14,11 +14,6 @@
   }
 }
 
-.inputFields {
-  margin-top: 10px;
-  margin-bottom: 10px;
-}
-
 .loginBtn {
   display: block;
   background: #6180EF;
@@ -33,16 +28,6 @@
 .loginBtn:hover {
   background: rgb(113, 140, 238);
   text-decoration: none;
-}
-
-.field {
-  display: block;
-  border-radius: 5px;
-  border: solid 1px #F0F0F0;
-  margin-top:20px;
-  font-size: 15px;
-  padding: 10px;
-  outline: none;
 }
 
 .mode {

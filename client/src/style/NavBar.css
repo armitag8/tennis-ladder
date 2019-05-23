@@ -7,9 +7,14 @@
     padding-right: 17px;
 }
 
+.title{
+    width: 100%;
+    text-align: center;
+}
+
 .tabs{
     height: 100%;
-    width: 40%;
+    width: 50%;
 }
 
 @media all and (max-width: 640px) {
@@ -29,11 +34,15 @@
     .navbar {
         border-bottom: 1px solid black;
         background: #6180EF;
+        width: 100%;
+        position: fixed;
+        top: 0;
     }
 
     .tabs {
         background: #6180EF;
-        position: absolute;
+        position: fixed;
+        top: 80px;
         float: left;
         z-index: 99;
         font-size: 200%;

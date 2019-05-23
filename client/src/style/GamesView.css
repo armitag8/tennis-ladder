@@ -1,7 +1,36 @@
+.past-games-column-headers, .game-record {
+    display: flex;
+    justify-content: space-around;
+    padding-bottom: 7px;
+    text-align: center;
+}
+
+.opponent {
+    width: 40%;
+}
+
+.week{
+    width: 15%;
+}
+
+.result{
+    width: 20%;
+}
+
+.score {
+    width: 25%;
+}
+
+.past-games-column-headers{
+    margin-top: 10px;
+    border-bottom: 3px double black;
+    font-weight: bold;
+}
+
 .game-record{
     width: 100%;
-    border-bottom: 3px double black;
-    padding-bottom: 7px;
+    margin-top: 10px;
+    border-bottom: 1px dotted black;
 }
 
 .games{
@@ -12,7 +41,7 @@
     width: 90%;
     display: flex;
     align-items: baseline;
-    justify-content: space-evenly;
+    justify-content: space-around;
 }
 
 .search-box {
@@ -23,8 +52,22 @@
 
 .search-box input{
     width: 80%;
-    height: 40px;
+    height: 50px;
     border-radius: 10px;
     padding: 5px;
 }
 
+@media all and (max-width: 640px)  {
+    .game-search{
+        width: 100%;
+        justify-content: space-between;
+    }
+    .search-box input {
+        width: 95%;
+    }
+
+    .search-box{
+        width: 100%;
+        justify-content: space-between;
+    }
+}

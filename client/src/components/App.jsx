@@ -10,7 +10,7 @@ import About from "./About";
 import Privacy from "./Privacy";
 import Admin from "./Admin";
 import shortid from "shortid";
-//import ProfileView from "./ProfileView";
+import ProfileView from "./ProfileView";
 
 
 class App extends Component {
@@ -53,19 +53,18 @@ class App extends Component {
     switchView = view => this.setState({ view: view });
 
     render = () => {
-        let views = {
-            login: <LoginScreen onAuthenticate={this.authenticate} logout={this.logout}/>,
-            privacy: <Privacy user={this.state.user} logout={this.logout}/>,
-            about: <About user={this.state.user} logout={this.logout}/>,
-            //profile: <ProfileView/>,
-        };
+        let views = {};
+        if (this.state.user === config.admin || config.mods.includes(this.state.user))
+            views.admin = <Admin user={this.state.user} logout={this.logout} onError={this.onError}/>;
+        views.login = <LoginScreen onAuthenticate={this.authenticate} logout={this.logout}/>;
+        views.about = <About user={this.state.user} logout={this.logout}/>;
+        views.privacy = <Privacy user={this.state.user} logout={this.logout}/>;
         if (this.state.user) {
             views.ranking = <LadderView user={this.state.user} logout={this.logout} onError={this.onError}/>;
             views.matches = <GamesView user={this.state.user} logout={this.logout} onError={this.onError}/>;
+            views.profile = <ProfileView user={this.state.user} logout={this.logout} onError={this.onError}/>;
             delete Object.assign(views, {"logout": views.login }).login;
         }
-        if (this.state.user === config.admin || config.mods.includes(this.state.user))
-            views.admin = <Admin user={this.state.user} logout={this.logout} onError={this.onError}/>;
         return (
             <div>
                 <NavBar 

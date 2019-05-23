@@ -16,13 +16,6 @@
     margin-right: 15px;
 }
 
-.score-box input{
-    width: 180px;
-    height: 40px;
-    border-radius: 10px;
-    padding: 5px;
-}
-
 .score-box{
     display: flex;
     flex-direction: row;
@@ -36,6 +29,11 @@
     .score-box {
         flex-direction: column;
     }
+
+    .score-box > .field{
+        margin: 2px;
+    }
+
     .game-form {
         justify-content: space-between;
     }

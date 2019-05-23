@@ -55,8 +55,14 @@ const authenticate = (req, res) => {
     "",
     { path: "/", maxAge: 1 }
   ));
-  res.json(user);
+  res.status(201).send();
 };
+
+const unAuthenticate = (req, res, next) => {
+  req.session.user = null;
+  setUserCookie("", res);
+  res.status(204).end();
+}
 
 const setUserCookie = (user, res) => res.setHeader("Set-Cookie",
   cookie.serialize(
@@ -68,6 +74,10 @@ const setUserCookie = (user, res) => res.setHeader("Set-Cookie",
 const isMod = (req, res, next) =>
   req.session.user === config.admin || config.mods.includes(req.session.user) ? next() :
     res.status(403).send("Access denied: moderators and administrator only");
+
+const isOwnerOrMod = (req, res, next) =>
+  config.mods.concat([config.admin, req.params._id]).includes(req.session.user) ?
+    next() : res.status(403).send("Access denied");
 
 const sanitizeUser = (req, res, next) => {
   try {
@@ -176,11 +186,7 @@ router.use(express.json());
 router.use(express.urlencoded({ extended: false }));
 
 // Sign out
-router.put("/api/user/", (req, res, next) => {
-  req.session.user = null;
-  setUserCookie("", res);
-  res.status(204).end();
-});
+router.put("/api/user/", unAuthenticate);
 
 // Sign in
 router.put("/api/user/:_id", validateUserId, checkIdMatchesBody, (req, res, next) =>
@@ -206,22 +212,34 @@ router.get("/api/user/", isAuthenticated, (req, res, next) => {
 });
 
 // Remove User
-router.delete("/api/user/:_id", isAuthenticated, validateUserId, (req, res, next) => {
+router.delete("/api/user/:_id", isAuthenticated, validateUserId, isOwnerOrMod, (req, res, next) => {
   let userID = req.params._id;
-  if (!config.mods.concat([config.admin, userID]).includes(req.session.id))
-    res.status(403).send("Access denied");
+  if (userID === config.admin)
+    res.status(422).send("Cannot delete administrator");
   else
     database.deleteUser(userID)
-      .then(x => res.json(x))
+      .then(res.status(204).send())
       .catch(error => res.status(error.code).send(error.message));
 });
 
 // Move User into position (ADMIN)
 router.put("/api/user/:_id/position/:pos", isMod, validateUserId, (req, res, next) =>
   database.moveUser(req.params._id, Number.parseInt(req.params.pos))
-    .then(x => res.json(x))
+    .then(x => res.status(200).send())
     .catch(error => res.status(error.code).send(error.message))
 );
+
+// Modify User
+router.patch("/api/user/:_id", isAuthenticated, validateUserId, isOwnerOrMod, (req, res, next) => {
+  let firstname = req.body.firstname;
+  let lastname = req.body.lastname;
+  if ((! firstname || validator.isAlpha(firstname)) && (! lastname || validator.isAlpha(lastname)))
+    database.updateUser(req.params._id, firstname, lastname, req.body.password)
+      .then(result => res.json(result))
+      .catch(error => res.status(error.code).send(error.message));
+  else
+    res.status(422).send("Invalid name(s)");
+});
 
 // Get Scheduled Games
 router.get("/api/games/scheduled/:_id", isAuthenticated, validateUserId, (req, res, next) =>
@@ -230,8 +248,15 @@ router.get("/api/games/scheduled/:_id", isAuthenticated, validateUserId, (req, r
     .catch(error => res.status(error.code).send(error.message))
 );
 
+// Get Past Games
+router.get("/api/games/past/:_id", isAuthenticated, validateUserId, (req, res, next) =>
+  database.getPastGames(req.params._id)
+    .then(docs => res.json(docs))
+    .catch(error => res.status(error.code).send(error.message))
+);
+
 const gamePlayedEmail = game => (
-  `
+`
 <h2>Match Recorded</h2>
 <p>A match has been recorded:</p>
 <h3>Score<h3>
@@ -259,8 +284,7 @@ router.post("/api/games/", isAuthenticated, (req, res, next) => {
           to: `${game.player1}, ${game.player2}`,
           subject: "New Match Score",
           html: gamePlayedEmail(game)
-        }, (err, info) =>
-            err ? res.status(500).send("Email failure") : res.json(info.response));
+        }, err => err ? res.status(500).send("Email failure") : res.status(201).send());
       }).catch(error => res.status(error.code).send(error.message));
   } catch (e) {
     res.status(422).send(e.message);
@@ -293,11 +317,8 @@ router.post("/api/invite/:_id", isMod, validateUserId, (req, res, next) =>
         to: req.params._id,
         subject: "Join Our Tennis Ladder",
         html: inviteEmail(invite)
-      }, (err, info) =>
-          err ? res.status(500).send("Email failure") : res.json(info.response)
-      )
-    )
-    .catch(error => res.status(error.code).send(error.message))
+      }, err => err ? res.status(500).send("Email failure") : res.status(201).send())
+    ).catch(error => res.status(error.code).send(error.message))
 );
 
 // Confirm Invite

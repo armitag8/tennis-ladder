@@ -70,7 +70,7 @@ class Admin extends Component {
     render() {
         return (
             <form className="admin" onSubmit={e => { e.preventDefault(); this.applyAdministration(); }}>
-                <select
+                <select className="field"
                     name="action"
                     value={this.state.action}
                     placeholder="action"
@@ -78,21 +78,22 @@ class Admin extends Component {
                     {Object.keys(this.actions).map(action =>
                         <option key={action} value={action}>{toTitleCase(action)}</option>)}
                 </select>
-                <input
+                <input className="field"
                     name="player"
-                    type="email"
+                    type="emailfield"
                     value={this.state.player}
                     placeholder="Player"
                     onChange={this.onUpdate}
                 />
                 {this.state.action !== "move" ? null : <input
+                    className="field"
                     name="position"
                     value={this.state.position}
                     onChange={this.onUpdate}
                     placeholder="Position"
                     type="number"
                 />}
-                <button type="submit">Submit</button>
+                <button className="field" type="submit">Submit</button>
             </form>
         );
     }

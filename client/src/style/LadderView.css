@@ -12,6 +12,7 @@
     align-items: center;
     justify-content: space-between;
     margin: 7px;
+    text-align: center;
 }
 
 .row-bar .player-info{

@@ -77,7 +77,7 @@ let database = (function () {
     );
 
     module.inviteUser = (email, confirmed = false) => new Promise((resolve, reject) =>
-        invites.count({ _id: email }, (err, count) => {
+        invites.count({ _id: email, confirmed: false }, (err, count) => {
             if (err) reject(DB_FAIL);
             else if (count) reject(new HTTPError(409, "Invite already sent"));
             else {
@@ -86,7 +86,8 @@ let database = (function () {
                     code: crypto.randomBytes(64).toString("hex"),
                     confirmed: confirmed
                 };
-                invites.insert(invite, err => err ? reject(DB_FAIL) : resolve(invite));
+                invites.update({ _id: email }, invite, { upsert: true },
+                    err => err ? reject(DB_FAIL) : resolve(invite));
             }
         })
     );
@@ -127,7 +128,7 @@ let database = (function () {
     );
 
     const USERS_PER_PAGE = 10;
-    module.getUsers = (pageNumber) => new Promise((resolve, reject) =>
+    module.getUsers = pageNumber => new Promise((resolve, reject) =>
         users.find({}).sort({ position: 1 }).skip(USERS_PER_PAGE * pageNumber).limit(USERS_PER_PAGE)
             .exec((err, foundUsers) => err ? reject(DB_FAIL) : resolve(foundUsers.map(removePassword)))
     );
@@ -142,7 +143,18 @@ let database = (function () {
                     { $inc: { position: -1 } },
                     { multi: true },
                     err => err ? console.log(err) || reject(DB_FAIL) : resolve(true)))
-        }));
+        })
+    );
+
+    module.updateUser = (userID, firstname, lastname, password) => new Promise((resolve, reject) => {
+        let updates = {};
+        if (firstname) updates.firstname = firstname
+        if (lastname) updates.lastname = lastname;
+        if (password) updates.password = saltAndHash(password);
+        console.log(updates);
+        users.update({ _id: userID }, { $set: updates }, err =>
+            err ? reject(DB_FAIL) : resolve(true))
+    });
 
     module.moveUser = (userID, position) => new Promise((resolve, reject) => users.findOne(
         { _id: userID }, (err, user) => {
@@ -180,7 +192,7 @@ let database = (function () {
 
     module.scheduleGames = (week, sendEmail) => users.find({}, (err, users) =>
         err ? console.log(err) : users.forEach((user, index) => {
-            if (index !== 0){
+            if (index !== 0) {
                 let game = {
                     player1: user._id,
                     player2: users[index - 1]._id,
@@ -191,26 +203,61 @@ let database = (function () {
                     .then(() => sendEmail(game))
                     .catch(console.log);
             }
-                
+
         })
     );
 
     module.scheduleGame = game => new Promise((resolve, reject) =>
-        games.find({
+        games.findOne({
             $or: [
                 { player1: game.player1, player2: game.player2 },
                 { player1: game.player2, player2: game.player1 }
             ],
             week: game.week
-        }, (err, foundGames) => {
+        }, (err, foundGame) => {
             if (err)
                 reject(DB_FAIL);
-            else if (foundGames.length > 0)
+            else if (foundGame)
                 reject(new HTTPError(409, "This game has already been scheduled"));
             else
                 games.insert(game, err => err ? reject(DB_FAIL) : resolve(true));
         })
     );
+
+    module.getPastGames = player => new Promise((resolve, reject) => {
+        games.find({
+            $or: [{ player1: player }, { player2: player }],
+            played: true
+        }, (err, foundGames) => {
+            if (err) reject(DB_FAIL);
+            else {
+                let opponents = foundGames.map(
+                    game => game.player1 === player ? game.player2 : game.player1);
+                users.find({ _id: { $in: opponents } }, (err, players) => {
+                    if (err) reject(DB_FAIL);
+                    else {
+                        let result = foundGames.map(game => {
+                            let isPlayer1 = game.player1 === player;
+                            let opponentID = isPlayer1 ? game.player2 : game.player1;
+                            let opponent = players.find(player => player._id === opponentID);
+                            return {
+                                _id: game._id,
+                                opponent: {
+                                    _id: opponentID,
+                                    firstname: opponent ? opponent.firstname : "Deleted",
+                                    lastname: opponent ? opponent.lastname : "Player"
+                                },
+                                week: game.week,
+                                score: game.score,
+                                win: findWinner(game.score) === 1 && isPlayer1
+                            }
+                        });
+                        resolve(result);
+                    }
+                });
+            }
+        })
+    });
 
     module.getScheduledGames = player => new Promise((resolve, reject) => {
         games.find({
@@ -223,7 +270,7 @@ let database = (function () {
                     game => game.player1 === player ? game.player2 : game.player1);
                 users.find({ _id: { $in: opponents } }, (err, players) => {
                     if (err) reject(DB_FAIL);
-                    resolve(players.map(removePassword));
+                    else resolve(players.map(removePassword));
                 });
             };
         });
@@ -231,19 +278,19 @@ let database = (function () {
 
 
     module.playGame = game => new Promise((resolve, reject) =>
-        games.find({
+        games.findOne({
             $or: [
                 { player1: game.player1, player2: game.player2 },
                 { player1: game.player2, player2: game.player1 }
             ],
             week: game.week
-        }, (err, foundGames) => {
+        }, (err, foundGame) => {
             if (err)
                 reject(DB_FAIL);
-            else if (foundGames.length > 0 && foundGames[0].played)
+            else if (foundGame && foundGame.played)
                 reject(new HTTPError(409, "This game has already been played"));
             else {
-                let id = foundGames.length > 0 ? foundGames[0]._id : "this is not an id, probably";
+                let id = foundGame ? foundGame._id : "this is not an id, probably";
                 let player1Wins = findWinner(game.score) === 1;
                 let winner = player1Wins ? game.player1 : game.player2;
                 let loser = player1Wins ? game.player2 : game.player1;

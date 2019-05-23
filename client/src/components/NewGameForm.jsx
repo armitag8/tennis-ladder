@@ -68,7 +68,7 @@ class NewGameForm extends Component {
                 body: JSON.stringify(game)
             }).then(response => 
                 response.ok ? this.props.onSubmit() : response.text().then(
-                    err => this.onError(new Error(err))))
+                    err => this.props.onError(new Error(err))))
             .catch(err => this.props.onError(new Error(err)));
         } catch (e) {
             this.props.onError(e);
@@ -102,7 +102,6 @@ class NewGameForm extends Component {
                         <div className="score-box">
                             <label>Tiebreak Score:</label>
                             <ScoreBox 
-                                max="11"
                                 score={this.state.score[2]}
                                 index="2"
                                 alterScore={this.alterScore}
@@ -110,7 +109,6 @@ class NewGameForm extends Component {
                             />
                             <label>-</label>
                             <ScoreBox 
-                                max="11"
                                 score={this.state.score[3]}
                                 index="3"
                                 alterScore={this.alterScore}
@@ -127,7 +125,9 @@ class ScoreBox extends Component {
     render(){
         return (
             <React.Fragment>
-                <input type="number" 
+                <input 
+                    className="field"
+                    type="number" 
                     min="0"
                     max={this.props.max}
                     value={this.props.score} 

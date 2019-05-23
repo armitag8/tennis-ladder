@@ -24,7 +24,7 @@ class About extends Component {
                 <h2>Match Structure</h2>
                 <p>
                     "Matches" are played as pro-sets until a winning score of at least 8 games.
-                    One must win by two games. Ties of 8-8 are broken by tie-break games played
+                    Someone must win by two games. Ties of 8-8 are broken by tie-break games: played
                     until someone scores 10 points (again, first to win by 2).
                     Examples of final scores are therefore:
                 </p>
@@ -40,9 +40,19 @@ class About extends Component {
                     Once you have received an invitation via email, click the link in the email.
                     You can now create your account on the Login tab. Use the same email address
                     from which you accepted the invitation and fill in the rest of the Sign Up form.
-
-                    Now you're logged in, you can view your position on the ladder in the Ranking
-                    tab and any of your scheduled or past matches in the Matches tab
+                </p>
+                <p>
+                    After you're logged in, you can view your position on the ladder in the Ranking
+                    tab and any of your scheduled or past matches in the Matches tab.
+                </p>
+                <h3>
+                    Recording a Match Score
+                </h3>
+                <p>
+                    After completing a match, one player should log onto the website and 
+                    record the score, from either of the Matches or Ranking tabs. Click/tap
+                    the sliders on the left of any other player's name and position to begin 
+                    adding a match score.
                 </p>
                 <h2>How to Join</h2>
                 <p>
@@ -50,10 +60,9 @@ class About extends Component {
                 </p>
                 <EmailCaptcha />
                 <p>
-                    This ladder can only be joined by invitation, merely to protect your data
+                    This ladder can only be joined by invitation, in order to protect your data
                     on the web. Invitations are typically granted for any members (or paying guests)
-                    of <a href="https://www.utsc.utoronto.ca/athletics/tennis-club">UTSC's
-                    Tennis Courts</a>.
+                    of <a href={config.clubSite}>{config.club}</a>.
                 </p>
             </div>
         );
