@@ -93,6 +93,13 @@ class ProfileView extends Component {
                     <div className="submit-box">
                         <div className="fields-box">
                             <input
+                                autoComplete="username"
+                                value={this.props.user}
+                                readOnly
+                                hidden
+                            >
+                            </input>
+                            <input
                                 className="field"
                                 autoComplete="given-name"
                                 placeholder="First Name"
