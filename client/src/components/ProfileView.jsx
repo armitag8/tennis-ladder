@@ -6,7 +6,7 @@ import validator from "validator";
 class ProfileView extends Component {
     constructor(props) {
         super(props);
-        this.state = {
+        this.blank = {
             deleteConfirmation: "",
             password: "",
             password2: "",
@@ -15,6 +15,7 @@ class ProfileView extends Component {
             valid: false,
             error: Error("")
         };
+        this.state = this.blank; 
     }
     componentDidMount = () => this.props.user ? null : this.props.logout();
 
@@ -56,7 +57,7 @@ class ProfileView extends Component {
             lastname: this.state.lastname,
             password: this.state.password
         })
-    }).then(response => response.status === 200 ? null :
+    }).then(response => response.status === 200 ? this.setState({}) :
         response.text().then(err => this.props.onError(new Error(err))
         )).catch(this.props.onError);
 

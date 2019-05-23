@@ -53,19 +53,10 @@ class Admin extends Component {
         if (!this.isValid()) return;
         this.actions[this.state.action]()
             .then(response =>
-                response.ok ? response.json().then(console.log).catch(console.log) :
+                response.ok ? this.setState({ player: "", position: "" }) :
                     this.props.onError(new Error(response.status + " " + response.statusText)))
             .catch(error => this.props.onError(new Error(error)));
     }
-    /*
-    fetch(`/api/admin/${this.state.action}`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(this.state)
-    }).then(response => response.ok ? console.log("success") : 
-        this.props.onError(new Error(response.status + response.statusText)))
-    .catch(error => this.props.onError(new Error(error)));
-    */
 
     render() {
         return (
