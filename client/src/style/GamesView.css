@@ -1,3 +1,8 @@
+.past-games *{
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .past-games-column-headers, .game-record {
     display: flex;
     justify-content: space-around;

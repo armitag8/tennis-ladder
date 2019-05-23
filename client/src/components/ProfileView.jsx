@@ -74,7 +74,6 @@ class ProfileView extends Component {
                     <h2>
                         Delete your profile
                     </h2>
-                    <label>Your ranking will be lost.</label>
                     <div className="submit-box">
                         <input
                             className="field"

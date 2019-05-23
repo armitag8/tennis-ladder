@@ -19,7 +19,7 @@ class PlayerRow extends Component {
                 />
                 <div className="player-info">
                     <h2>{this.props.position}</h2>
-                    <h3>{this.props.firstname} {this.props.lastname}</h3>
+                    <h3 className="player-name">{this.props.firstname} {this.props.lastname}</h3>
                     <div className="stats">Wins: {this.props.wins}</div>
                     <div className="stats">Losses: {this.props.losses}</div>
                 </div>
