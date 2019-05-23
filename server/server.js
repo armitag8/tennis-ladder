@@ -20,8 +20,6 @@ const transporter = mailer.createTransport({
     pass: credentials.email
   }
 });
-console.log(config.admin);
-console.log(credentials.email);
 
 
 const WEEK_IN_SECONDS = 7 * 24 * 60 * 60 * 1000;
@@ -332,7 +330,7 @@ router.post("/api/invite/:_id", checkMod, validateUserId, (req, res, next) =>
         to: req.params._id,
         subject: "Join Our Tennis Ladder",
         html: inviteEmail(invite)
-      }, err => err ? console.log(err) && res.status(500).send("Email failure") : res.status(201).send())
+      }, err => err ? res.status(500).send("Email failure") : res.status(201).send())
     ).catch(error => res.status(error.code).send(error.message))
 );
 
