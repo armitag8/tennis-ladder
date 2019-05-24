@@ -395,7 +395,7 @@ const autoScheduleGames = () => {
     () => console.log(`scheduled games for week ${thisWeek()}`));
 }
 
-const inviteMods = () => credentials.mods.array.forEach(mod => 
+const inviteMods = () => credentials.mods.forEach(mod => 
   database.inviteUser(mod).then(console.log).catch(console.log)
 );
 
