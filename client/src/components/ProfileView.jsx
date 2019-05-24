@@ -37,6 +37,8 @@ class ProfileView extends Component {
         let s = this.state;
         if (s.password && s.password.length < 5) 
             this.handleError(Error("Password must have at least 5 characters"));
+        else if (validator.escape(s.password) !== s.password)
+            this.handleError(Error("Password cannot contain: <, >, &, ', \" or /"));
         else if (s.password !== s.password2)
             this.handleError(Error("Passwords must match"));
         else if (s.firstname && s.firstname.length < 1)
@@ -90,9 +92,9 @@ class ProfileView extends Component {
                     <h2>
                         Edit your profile
                     </h2>
-                    {this.state.valid ? null : <output>{this.state.error.message}</output>}
                     <div className="submit-box">
                         <div className="fields-box">
+                            {this.state.valid ? null : <output>{this.state.error.message}</output>}
                             <input
                                 autoComplete="username"
                                 value={this.props.user}

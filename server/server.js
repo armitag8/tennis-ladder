@@ -117,6 +117,10 @@ class User {
       throw Error("Not a valid user");
     else if (undefined === user._id || !validator.isEmail(user._id))
       throw Error("Not a valid email address");
+    if (user.password.length < 5) 
+      throw Error("Password must have at least 5 characters");
+    else if (validator.escape(user.password) !== user.password)
+      throw Error("Password cannot contain: <, >, &, ', \" or /");
     else if (undefined === user.lastname || !validator.isAlpha(user.lastname))
       throw Error("Not a valid last name");
     else if (undefined === user.firstname || !validator.isAlpha(user.firstname))
@@ -143,7 +147,7 @@ class Game {
       throw Error("Not a valid email address1");
     else if (undefined === game.player2 || !validator.isEmail(game.player2))
       throw Error("Not a valid email address2");
-    else if (game.player1 == game.player2)
+    else if (game.player1 === game.player2)
       throw Error("Cannot play against yourself");
     else if (Number.isInteger(game.week) && game.week < 1)
       throw Error("Not a valid week number");
@@ -203,7 +207,7 @@ router.put("/api/user/", unAuthenticate);
 
 // Sign in
 router.put("/api/user/:_id", validateUserId, checkIdMatchesBody, (req, res, next) =>
-  database.checkUser(req.body._id, req.body.password)
+  database.checkUser(req.body._id, validator.escape(req.body.password))
     .then(result => result ? authenticate(req, res) : res.status(401).send("Access denied"))
     .catch(error => res.status(error.code).send(error.message))
 );
@@ -211,7 +215,7 @@ router.put("/api/user/:_id", validateUserId, checkIdMatchesBody, (req, res, next
 // Sign up
 router.post("/api/user/:_id", validateUserId, checkIdMatchesBody, sanitizeUser,
   (req, res, next) =>
-    database.addUser(req.body)
+    database.addUser(new User(req.body))
       .then(result => authenticate(req, res))
       .catch(error => res.status(error.code).send(error.message))
 );
@@ -247,7 +251,7 @@ router.patch("/api/user/:_id", isAuthenticated, validateUserId, checkOwnerOrMod,
   let firstname = req.body.firstname;
   let lastname = req.body.lastname;
   if ((! firstname || validator.isAlpha(firstname)) && (! lastname || validator.isAlpha(lastname)))
-    database.updateUser(req.params._id, firstname, lastname, req.body.password)
+    database.updateUser(req.params._id, firstname, lastname, validator.escape(req.body.password))
       .then(result => res.json(result))
       .catch(error => res.status(error.code).send(error.message));
   else
@@ -336,7 +340,7 @@ router.post("/api/invite/:_id", checkMod, validateUserId, (req, res, next) =>
 
 // Confirm Invite
 router.get("/api/invite/:_id/:code", validateUserId, (req, res, next) =>
-  database.confirmInvite(req.params._id, req.params.code)
+  database.confirmInvite(req.params._id, validator.escape(req.params.code))
     .then(() => {
       res.setHeader("Set-Cookie", cookie.serialize(
         "invite",
@@ -391,17 +395,21 @@ const autoScheduleGames = () => {
     () => console.log(`scheduled games for week ${thisWeek()}`));
 }
 
-autoScheduleGames();
+const inviteMods = () => credentials.mods.array.forEach(mod => 
+  database.inviteUser(mod).then(console.log).catch(console.log)
+);
 
-if (!isProduction())
-  database.scheduleGames(thisWeek(), sendGameNotification);
+if (isProduction()) {
+  inviteMods();
+  autoScheduleGames();
+} else database.scheduleGames(thisWeek(), sendGameNotification);
 
 database.inviteUser(config.admin, true)
   .then(() => database.addUser(new User({
     _id: config.admin,
     firstname: config.owner.split(" ")[0],
     lastname: config.owner.split(" ")[1],
-    password: credentials.email,
+    password: credentials.admin,
     position: 1,
     wins: 0,
     losses: 0

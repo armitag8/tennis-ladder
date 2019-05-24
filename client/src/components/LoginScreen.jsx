@@ -43,6 +43,8 @@ class LoginScreen extends Component {
             this.handleError(Error("Username must be a valid email address."));
         else if (s.password.length < 5) 
             this.handleError(Error("Password must have at least 5 characters"));
+        else if (validator.escape(s.password) !== s.password)
+            this.handleError(Error("Password cannot contain: <, >, &, ', \" or /"));
         else if (s.mode === 'Sign Up' && s.password !== s.password2)
             this.handleError(Error("Passwords must match"));
         else if (s.mode === "Sign Up" && s.firstname.length < 1)
@@ -52,7 +54,7 @@ class LoginScreen extends Component {
         else if (s.mode === "Sign Up" && ! validator.isAlpha(s.lastname))
             this.handleError(Error("Last name may only contain alphabetic characters"));
         else
-            this.setState({ valid: true });
+            this.setState({ _id: s._id.toLowerCase(), valid: true });
     }
 
     handleError = (err) => {
@@ -90,18 +92,18 @@ class LoginScreen extends Component {
                 <form className="login-form" onSubmit={this.onSubmit}>
                     {this.state.valid 
                         ? null 
-                        : <output className="has-text-grey is-size-7">{this.state.error.message}</output>}
+                        : <output>{this.state.error.message}</output>}
                     <div className="inputFields">
                         <input 
                             type="emailfield"
-                            className="field input"
+                            className="field"
                             autoComplete="username"
                             placeholder="Email Address" 
                             name="_id"
                             value={this.state._id}
                             onChange={this.onUpdate}/>
                         <input 
-                            className="field input"
+                            className="field"
                             autoComplete={this.state.mode === "Sign In" ? 
                                             "current-password" : "new-password"}
                             type="password" 
@@ -112,7 +114,7 @@ class LoginScreen extends Component {
                         {this.state.mode === "Sign In" ? null :
                             <React.Fragment>
                                 <input 
-                                    className="field input" 
+                                    className="field" 
                                     type="password" 
                                     autoComplete="new-password"
                                     placeholder="Retype Password" 
@@ -120,14 +122,14 @@ class LoginScreen extends Component {
                                     value={this.state.password2}
                                     onChange={this.onUpdate}/>
                                 <input 
-                                    className="field input" 
+                                    className="field" 
                                     autoComplete="given-name"
                                     placeholder="First Name" 
                                     name="firstname" 
                                     value={this.state.firstname}
                                     onChange={this.onUpdate}/>
                                 <input 
-                                    className="field input"
+                                    className="field"
                                     autoComplete="family-name"
                                     placeholder="Last Name" 
                                     name="lastname" 

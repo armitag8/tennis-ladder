@@ -45,8 +45,10 @@ class Admin extends Component {
             this.props.onError(new Error("Invalid email"));
         else if (this.state.action === "move" && !validator.isInt(this.state.position))
             this.props.onError(new Error("Invalid position"));
-        else
+        else{
+            this.setState(s => ({ player: s.player.toLowerCase() }))
             return true;
+        }
     }
 
     applyAdministration = () => {

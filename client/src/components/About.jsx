@@ -18,8 +18,12 @@ class About extends Component {
                     By signing up for this ladder, you are committing to
                     finding time to play at least one match per week.
                     This is only fair to the other players in the ladder.
+                </p>
+                <p>
                     Usually, two matches are scheduled for each player each week,
-                    but your ranking will only be affected if you play neither.
+                    but your ranking will only be affected if you play neither. 
+                    Expect matches to be scheduled automatically against the players 
+                    immediately above and below you in the Ranking on Monday mornings.
                 </p>
                 <h2>Match Structure</h2>
                 <p>
