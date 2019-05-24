@@ -52,9 +52,9 @@ let database = (function () {
             return 1;
         else if (s1 === 9 && s0 === 7)
             return 2;
-        else if (s0 === 8 && s1 === 8 && s2 - s3 >= 2 && s2 > 10 && s3 > 0)
+        else if (s0 === 8 && s1 === 8 && s2 - s3 >= 2 && s2 > 9 && s3 > 0)
             return 1;
-        else if (s0 === 8 && s1 === 8 && s3 - s2 >= 2 && s3 > 10 && s2 > 0)
+        else if (s0 === 8 && s1 === 8 && s3 - s2 >= 2 && s3 > 9 && s2 > 0)
             return 2;
         else
             throw Error("Not a valid score");
