@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import '../style/GamesView.css';
 import PlayerRow from "./PlayerRow";
-import Button from "./Button";
+//import Button from "./Button";
 
 class GamesView extends Component {
     constructor(props) {

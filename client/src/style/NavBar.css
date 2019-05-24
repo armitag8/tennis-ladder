@@ -4,7 +4,8 @@
     justify-content: space-between;
     align-items: center;
     padding-left: 17px;
-    padding-right: 17px;
+    padding-right: 17px;    
+    z-index: 9999;
 }
 
 .title{
