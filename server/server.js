@@ -342,8 +342,8 @@ router.post("/api/invite/:_id", checkMod, validateUserId, (req, res, next) =>
     .then(invite => sendInvite(
       invite,
       req.params._id,
-      () => res.status(500).send("Email failure"),
-      () => res.status(201).send()
+      () => res.status(201).send(),
+      () => res.status(500).send("Email failure")
     )).catch(error => res.status(error.code).send(error.message))
 );
 

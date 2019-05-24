@@ -50,6 +50,14 @@ class About extends Component {
                     tab and any of your scheduled or past matches in the Matches tab.
                 </p>
                 <h3>
+                    Scheduled Matches
+                </h3>
+                <p>
+                    Each week, you should get an email or two about a match being scheduled between
+                    you and another player. Please contact that other player as soon as possible to
+                    arrange a time to play your match.
+                </p>
+                <h3>
                     Recording a Match Score
                 </h3>
                 <p>
@@ -57,6 +65,10 @@ class About extends Component {
                     record the score, from either of the Matches or Ranking tabs. Click/tap
                     the sliders on the left of any other player's name and position to begin 
                     adding a match score.
+                </p>
+                <p>
+                    You will not be able to play a match twice against the same player within
+                    the same week (Monday - Sunday).
                 </p>
                 <h2>How to Join</h2>
                 <p>
