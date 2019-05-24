@@ -31,9 +31,9 @@ const thisWeek = () => Math.floor((new Date() - new Date(config.startDate)) / WE
 const startServer = handler => {
   if (isProduction()) {
     require("https").createServer({
-      cert: fs.readFileSync("/etc/letsencrypt/live/utsc.tennisladder.ca/cert.pem", "utf8"),
-      key: fs.readFileSync("/etc/letsencrypt/live/utsc.tennisladder.ca/privkey.pem", "utf8"),
-      ca: fs.readFileSync("/etc/letsencrypt/live/utsc.tennisladder.ca/chain.pem", "utf8")
+      cert: fs.readFileSync(`/etc/letsencrypt/live/${config.publicURL}/cert.pem`, "utf8"),
+      key: fs.readFileSync(`/etc/letsencrypt/live/${config.publicURL}/privkey.pem`, "utf8"),
+      ca: fs.readFileSync(`/etc/letsencrypt/live/${config.publicURL}/chain.pem`, "utf8")
     }, handler).listen(443);
     require("http").createServer(
       express().use((req, res) => res.redirect(`https://${req.headers.host}${req.url}`)).listen(80)
