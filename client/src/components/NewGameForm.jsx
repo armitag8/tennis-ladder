@@ -102,17 +102,19 @@ class NewGameForm extends Component {
                         <div className="score-box">
                             <label>Tiebreak Score:</label>
                             <ScoreBox 
+                                max="20"
                                 score={this.state.score[2]}
                                 index="2"
                                 alterScore={this.alterScore}
-                                owner="Your"
+                                owner="Your Tiebreak"
                             />
                             <label>-</label>
                             <ScoreBox 
+                                max="20"
                                 score={this.state.score[3]}
                                 index="3"
                                 alterScore={this.alterScore}
-                                owner={`${this.props.opponentName}'s`}
+                                owner={`${this.props.opponentName}'s Tiebreak`}
                             />
                         </div>}
                 </div>

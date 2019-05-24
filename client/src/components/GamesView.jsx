@@ -57,12 +57,14 @@ class GamesView extends Component {
                 </section>
                 <section>
                     <h2>Past Matches</h2>
+                    {/*
                     <form className="game-search">
                         <div className="search-box">
                             <input type="search" placeholder="Search for past matches" />
                         </div>
                         <Button icon="icono-search" />
                     </form>
+                    */}
                     <div className="past-games">
                         <div className="past-games-column-headers">
                             <div className="week">Week</div>
