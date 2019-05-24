@@ -81,13 +81,17 @@ let database = (function () {
             if (err) reject(DB_FAIL);
             else if (count) reject(new HTTPError(409, "Invite already sent"));
             else {
-                let invite = {
-                    _id: email,
-                    code: crypto.randomBytes(64).toString("hex"),
-                    confirmed: confirmed
-                };
-                invites.update({ _id: email }, invite, { upsert: true },
-                    err => err ? reject(DB_FAIL) : resolve(invite));
+                users.count({ _id: email }, (err, count) => {
+                    if (err) reject(DB_FAIL);
+                    else if (count) reject(new HTTPError(409, "User already exists"));
+                    let invite = {
+                        _id: email,
+                        code: crypto.randomBytes(64).toString("hex"),
+                        confirmed: confirmed
+                    };
+                    invites.update({ _id: email }, invite, { upsert: true },
+                        err => err ? reject(DB_FAIL) : resolve(invite));
+                })
             }
         })
     );
