@@ -272,7 +272,7 @@ router.get("/api/games/past/:_id", isAuthenticated, validateUserId, (req, res, n
     .catch(error => res.status(error.code).send(error.message))
 );
 
-const beautifyAddress = (name, address) => `'${name} 🎾' <${validator.normalizeEmail(address)}>`;
+const beautifyAddress = (name, address) => `${name} 🎾 <${validator.normalizeEmail(address)}>`;
 
 const gamePlayedEmail = game => (
 `
