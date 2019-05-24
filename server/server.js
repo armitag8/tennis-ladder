@@ -272,6 +272,8 @@ router.get("/api/games/past/:_id", isAuthenticated, validateUserId, (req, res, n
     .catch(error => res.status(error.code).send(error.message))
 );
 
+const beautifyAddress = (name, address) => `${name} 🎾 <${validator.normalizeEmail(address)}>'`;
+
 const gamePlayedEmail = game => (
 `
 <h2>Match Recorded</h2>
@@ -297,7 +299,7 @@ router.post("/api/games/", isAuthenticated, (req, res, next) => {
     database.playGame(game)
       .then(ok => {
         transporter.sendMail({
-          from: config.admin,
+          from: beautifyAddress(config.owner, config.admin),
           to: `${game.player1}, ${game.player2}`,
           subject: "New Match Score",
           html: gamePlayedEmail(game)
@@ -308,10 +310,11 @@ router.post("/api/games/", isAuthenticated, (req, res, next) => {
   }
 });
 
-const inviteEmail = invite => `<h2>Welcome</h2>
+const inviteEmail = (invite, isMod) => `<h2>Welcome</h2>
 <p>
-  You've been invited to join ${config.club}'s Tennis Ladder. Click the link below if you'd like to
-  join or to learn more.
+  You've been invited to join ${config.club}'s Tennis Ladder${isMod ? 
+    " and will be granted <em>moderator</em> privileges (inviting, deleting and moving players)" 
+    : ""}. Click the link below if you'd like to join or to learn more.
 </p>
 <p>
 <a href=${isProduction() ? "https://" + config.publicURL : "http://localhost:3001"}/api/invite/${
@@ -325,17 +328,23 @@ const inviteEmail = invite => `<h2>Welcome</h2>
 </p>
 `
 
+const sendInvite = (invite, to, succ, fail, isMod=false) =>
+  transporter.sendMail({
+    from: beautifyAddress(config.owner, config.admin),
+    to: to,
+    subject: "Join Our Tennis Ladder",
+    html: inviteEmail(invite, isMod)
+  }, err => err ? fail() : succ());
+
 // Send Invite
 router.post("/api/invite/:_id", checkMod, validateUserId, (req, res, next) =>
   database.inviteUser(req.params._id)
-    .then(invite =>
-      transporter.sendMail({
-        from: config.admin,
-        to: req.params._id,
-        subject: "Join Our Tennis Ladder",
-        html: inviteEmail(invite)
-      }, err => err ? res.status(500).send("Email failure") : res.status(201).send())
-    ).catch(error => res.status(error.code).send(error.message))
+    .then(invite => sendInvite(
+      invite,
+      req.params._id,
+      () => res.status(500).send("Email failure"),
+      () => res.status(201).send()
+    )).catch(error => res.status(error.code).send(error.message))
 );
 
 // Confirm Invite
@@ -378,31 +387,40 @@ const gameScheduledEmail = game => (
 
 const sendGameNotification = game => {
   transporter.sendMail({
-    from: config.admin,
+    from: beautifyAddress(config.owner, config.admin),
     to: `${game.player1}, ${game.player2}`,
     subject: "Match Scheduled",
     html: gameScheduledEmail(game)
   }, (err, info) => err ? console.log(err) : console.log(info.response))
 }
 
-
 const autoScheduleGames = () => {
   let recurrance = new schedule.RecurrenceRule();
-  recurrance.dayOfWeek = 1; // Monday
-  recurrance.hour = 13; // 1 PM (GMT => 8 AM EST)
+  recurrance.dayOfWeek = 5; // Monday
+  recurrance.hour = 23; // 1 PM (GMT => 8 AM EST)
   recurrance.minute = 0;
   schedule.scheduleJob(recurrance, () => database.scheduleGames(thisWeek(), sendGameNotification),
     () => console.log(`scheduled games for week ${thisWeek()}`));
 }
 
-const inviteMods = () => credentials.mods.forEach(mod => 
-  database.inviteUser(mod).then(console.log).catch(console.log)
+const inviteList = (list, isMod=false) => list.forEach(user => 
+  database.inviteUser(user).then(
+    invite => sendInvite(
+      invite,
+      user,
+      () => console.log(`${isMod ? "Moderator: " : "User: "}${user} has been invited.`),
+      () => console.log("Email failure"),
+      isMod
+  )).catch(console.log)
 );
 
 if (isProduction()) {
-  inviteMods();
+  inviteList(credentials.mods, true);
   autoScheduleGames();
-} else database.scheduleGames(thisWeek(), sendGameNotification);
+} else {
+  inviteList(["joe@armitage.com", "joe.bart.armitage@gmail.com"], true);
+  setTimeout(() => database.scheduleGames(thisWeek(), sendGameNotification), 100000);
+};
 
 database.inviteUser(config.admin, true)
   .then(() => database.addUser(new User({
