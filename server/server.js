@@ -272,7 +272,7 @@ router.get("/api/games/past/:_id", isAuthenticated, validateUserId, (req, res, n
     .catch(error => res.status(error.code).send(error.message))
 );
 
-const beautifyAddress = (name, address) => `${name} 🎾 <${validator.normalizeEmail(address)}>'`;
+const beautifyAddress = (name, address) => `'${name} 🎾' <${validator.normalizeEmail(address)}>`;
 
 const gamePlayedEmail = game => (
 `
@@ -299,7 +299,7 @@ router.post("/api/games/", isAuthenticated, (req, res, next) => {
     database.playGame(game)
       .then(ok => {
         transporter.sendMail({
-          from: beautifyAddress(config.owner, config.admin),
+          from: beautifyAddress("Tennis Ladder", config.admin),
           to: `${game.player1}, ${game.player2}`,
           subject: "New Match Score",
           html: gamePlayedEmail(game)
@@ -330,7 +330,7 @@ const inviteEmail = (invite, isMod) => `<h2>Welcome</h2>
 
 const sendInvite = (invite, to, succ, fail, isMod=false) =>
   transporter.sendMail({
-    from: beautifyAddress(config.owner, config.admin),
+    from: beautifyAddress("Tennis Ladder", config.admin),
     to: to,
     subject: "Join Our Tennis Ladder",
     html: inviteEmail(invite, isMod)
@@ -387,7 +387,7 @@ const gameScheduledEmail = game => (
 
 const sendGameNotification = game => {
   transporter.sendMail({
-    from: beautifyAddress(config.owner, config.admin),
+    from: beautifyAddress("Tennis Ladder", config.admin),
     to: `${game.player1}, ${game.player2}`,
     subject: "Match Scheduled",
     html: gameScheduledEmail(game)
@@ -418,7 +418,7 @@ if (isProduction()) {
   inviteList(credentials.mods, true);
   autoScheduleGames();
 } else {
-  inviteList(["joe@armitage.com", "joe.bart.armitage@gmail.com"], true);
+  inviteList(["joe@armitage.com", "joe.bart.armitage@gmail.com"]);
   setTimeout(() => database.scheduleGames(thisWeek(), sendGameNotification), 100000);
 };
 
