@@ -155,7 +155,6 @@ let database = (function () {
         if (firstname) updates.firstname = firstname
         if (lastname) updates.lastname = lastname;
         if (password) updates.password = saltAndHash(password);
-        console.log(updates);
         users.update({ _id: userID }, { $set: updates }, err =>
             err ? reject(DB_FAIL) : resolve(true))
     });

@@ -42,6 +42,7 @@ class Ladder extends Component {
                     losses={player.losses}
                     updatePlayers={this.props.updatePlayers}
                     onError={this.props.onError}
+                    loading={this.props.loading}
                 />)}
         </div>
     );
@@ -56,23 +57,25 @@ class LadderView extends Component {
             _id: "",
             week: 1,
             players: [],
-            page: 0
+            page: 0,
+            loading: false
         };
     }
 
-    getPage = page => fetch(`/api/user/?page=${page}`)
+    getPage = page => this.setState({loading: true}, () => fetch(`/api/user/?page=${page}`)
         .then(response => {
             if (response.status === 200)
                 response.json().then(users => this.setState(state =>
                     ({ 
                         players: page === 0 ? users : state.players.concat(users),
-                        page: page 
+                        page: page,
+                        loading: false
                     })));
             else if (response.status === 401)
                 this.props.logout();
             else
                 console.log(response);
-        }).catch(console.log);
+        }).catch(console.log));
 
     updatePlayers = () => this.getPage(0);
 
@@ -86,6 +89,7 @@ class LadderView extends Component {
         updatePlayers={this.updatePlayers}
         onNextPage={this.getNextPage}
         onError={this.props.onError}
+        loading={this.state.loading}
     />;
 }
 

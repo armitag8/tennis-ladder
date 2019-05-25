@@ -13,7 +13,9 @@ class PlayerRow extends Component {
     render() {
         return (<div className="player-row">
             <div className="row-bar" >
-                <Button icon={this.state.edit ? "icono-cross" : "icono-sliders"}
+                <Button  
+                    loading={this.props.loading}
+                    icon={this.state.edit ? "icono-cross" : "icono-sliders"}
                     onClick={() => this.props.user === this.props._id ? null :
                         this.setState(s => ({ edit: !s.edit }))}
                 />

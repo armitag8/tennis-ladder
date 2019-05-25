@@ -37,6 +37,7 @@
   color: #6180EF;
   margin-top: 20px;
   outline: none;
+  height: 35px;
 }
 
 .mode:hover, .mode:active, .mode:focus{
