@@ -61,19 +61,21 @@ class NewGameForm extends Component {
 
     submitForm = e => {
         e.preventDefault();
-        try {
-            let game = new Game(this.props.user, this.props.opponent, this.state.score);
-            fetch("/api/games/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(game)
-            }).then(response => response.ok ?
-                    this.setState({loading: false}, this.props.onSubmit) : 
+        this.setState({ loading: true }, () => {
+            try {
+                let game = new Game(this.props.user, this.props.opponent, this.state.score);
+                fetch("/api/games/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(game)
+                }).then(response => response.ok ?
+                    this.setState({ loading: false }, this.props.onSubmit) :
                     response.text().then(err => this.props.onError(new Error(err)))
-            ).catch(err => this.props.onError(new Error(err)));
-        } catch (e) {
-            this.props.onError(e);
-        }
+                ).catch(err => this.props.onError(new Error(err)));
+            } catch (e) {
+                this.props.onError(e);
+            }
+        });
     };
 
     render() {
@@ -122,7 +124,7 @@ class NewGameForm extends Component {
                 <Button
                     loading={this.state.loading}
                     icon="icono-check"
-                    onClick={() => this.setState({ loading: true }, this.submitForm)} />
+                    onClick={this.submitForm} />
             </form>);
     }
 }
