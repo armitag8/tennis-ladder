@@ -16,7 +16,7 @@
     "install": "node scripts/install-server.js",
     "postinstall": "node scripts/install-client.js",
     "build": "node scripts/build-client.js",
-    "deploy": "npm run build; pkill node || true; cd server; NODE_ENV=production node src/start.js > ./server.log & echo tennis ladder deployed;",
+    "deploy": "npm run build; cd server; pkill node || true; NODE_ENV=production node node_modules/nodemon/bin/nodemon.js ./src/start.js > ./server.log & echo tennis ladder deployed;",
     "test": "concurrently \"node scripts/test-server.js\" \"node scripts/test-client.js\""
   },
   "repository": {
