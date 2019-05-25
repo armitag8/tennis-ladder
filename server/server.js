@@ -416,7 +416,6 @@ const inviteList = (list, isMod=false) => list.forEach(user =>
 
 if (isProduction()) {
   inviteList(credentials.mods, true);
-  inviteList();
   autoScheduleGames();
 } else {
   inviteList(credentials.test);
