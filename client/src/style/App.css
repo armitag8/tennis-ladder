@@ -11,6 +11,8 @@
 .error{
   border-radius: 10px 10px 0px 0px;
   border-top: 2px solid black;
+  font-size: 24px;
+  padding: 7px;
 }
 
 .view{

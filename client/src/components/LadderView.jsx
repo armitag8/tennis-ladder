@@ -42,7 +42,6 @@ class Ladder extends Component {
                     losses={player.losses}
                     updatePlayers={this.props.updatePlayers}
                     onError={this.props.onError}
-                    loading={this.props.loading}
                 />)}
         </div>
     );

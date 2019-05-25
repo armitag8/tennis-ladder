@@ -9,25 +9,24 @@ class Button extends Component {
             angle: 0
         };
     }
-
-    rotate = () => setInterval(() => 
-        this.setState(s => ({angle: s.angle + 3}), this.props.loading ? this.rotate : null), 16);
     
     render() {
         return (
             <div>
                 <button 
                     className={this.props.loading ? "mode" : "btn"}
-                    onClick={() => {
-                        this.rotate(); 
-                        if (!this.props.loading) this.props.onClick();
-                    }
-                }>
+                    onClick={e => this.props.loading ? null : this.props.onClick(e)}
+                >
                     <div
                         className={this.props.loading ? "icono-sync" : this.props.icon}
-                        style={this.props.loading ? 
-                            { transform: `rotate(${this.state.angle}deg)` } 
-                            : {}}
+                        style={! this.props.loading ? {} : {
+                            width: "35px",
+                            height: "35px",
+                            margin: "10px",
+                            WebkitAnimation: "spin 4s linear infinite",
+                            MozAnimation: "spin 4s linear infinite",
+                            animation: "spin 4s linear infinite",
+                        }}
                     />
                 </button>
             </div>

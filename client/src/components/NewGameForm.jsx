@@ -68,19 +68,20 @@ class NewGameForm extends Component {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(game)
-                }).then(response => response.ok ?
-                    this.setState({ loading: false }, this.props.onSubmit) :
-                    response.text().then(err => this.props.onError(new Error(err)))
-                ).catch(err => this.props.onError(new Error(err)));
+                }).then(response => this.setState({ loading: false }, response.ok ?
+                    this.props.onSubmit : () => response.text().then(
+                        err => this.props.onError(new Error(err))))
+                ).catch(err => this.setState({ loading: false }, () =>
+                    this.props.onError(new Error(err))));
             } catch (e) {
-                this.props.onError(e);
+                this.setState({ loading: false }, () => this.props.onError(e));
             }
         });
     };
 
     render() {
         return (
-            <form className="game-form">
+            <form className="game-form" onSubmit={this.submitForm}>
                 <div className="scores-box">
                     <div className="score-box">
                         <label>Proset Score:</label>
@@ -124,7 +125,7 @@ class NewGameForm extends Component {
                 <Button
                     loading={this.state.loading}
                     icon="icono-check"
-                    onClick={this.submitForm} />
+                    onClick={(this.submitForm)} />
             </form>);
     }
 }

@@ -23,6 +23,7 @@
   font-size: 20px;
   padding: 10px 20px 10px 20px;
   text-decoration: none;
+  margin: 10px 0px 10px 0px;
 }
 
 .loginBtn:hover {
@@ -35,7 +36,6 @@
   font-size: 15px;
   background: none;
   color: #6180EF;
-  margin-top: 20px;
   outline: none;
   height: 35px;
 }

@@ -396,8 +396,8 @@ const sendGameNotification = game => {
 
 const autoScheduleGames = () => {
   let recurrance = new schedule.RecurrenceRule();
-  recurrance.dayOfWeek = 5; // Monday
-  recurrance.hour = 23; // 1 PM (GMT => 8 AM EST)
+  recurrance.dayOfWeek = 1; // Monday
+  recurrance.hour = 12; // 1 PM (GMT => 8 AM EST)
   recurrance.minute = 0;
   schedule.scheduleJob(recurrance, () => database.scheduleGames(thisWeek(), sendGameNotification),
     () => console.log(`scheduled games for week ${thisWeek()}`));
@@ -416,9 +416,10 @@ const inviteList = (list, isMod=false) => list.forEach(user =>
 
 if (isProduction()) {
   inviteList(credentials.mods, true);
+  inviteList();
   autoScheduleGames();
 } else {
-  inviteList(["joe@armitage.com", "joe.bart.armitage@gmail.com"]);
+  inviteList(credentials.test);
   setTimeout(() => database.scheduleGames(thisWeek(), sendGameNotification), 100000);
 };
 
