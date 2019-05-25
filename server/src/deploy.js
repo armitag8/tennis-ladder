@@ -1,4 +1,2 @@
-const {inviteList, initialize} = require("./server.js");
-const list = require('../../user-list.json');
+const {initialize} = require("./server.js");
 initialize();
-inviteList(list);

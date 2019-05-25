@@ -279,16 +279,16 @@ const gamePlayedEmail = game => (
 <h2>Match Recorded</h2>
 <p>A match has been recorded:</p>
 <h3>Score<h3>
-<ol>
+<ul>
   <li>${game.player1}: ${game.score[0]}</li>
   <li>${game.player2}: ${game.score[1]}</li>
-</ol>
+</ul>
 ${game.score.length < 3 ? "" : `
 <h4>Tiebreak</h4>
-<ol>
+<ul>
   <li>${game.player1}: ${game.score[2]}</li>
   <li>${game.player2}: ${game.score[3]}</li>
-</ol>`}
+</ul>`}
 `
 );
 
@@ -321,10 +321,9 @@ const inviteEmail = (invite, isMod) => `<h2>Welcome</h2>
   encodeURIComponent(invite._id)}/${invite.code}>Join Now</a>
 </p>
 <p>
+  You are receiving this email because we believe you have participated in our Tennis Ladder before,
+  or have expressed an interest in doing so this year, and we hope that you would like ot again.
   If you have received this email in error (you are not a patron of ${config.club}), please ignore it.
-</p>
-<p>
-  You will receive no further emails regarding this offer, in accordance with CAN-SPAM regulations.
 </p>
 `
 
