@@ -18,7 +18,7 @@
   },
   "scripts": {
     "start": "nodemon src/start.js",
-    "deploy": "node src/deploy.js",
+    "deploy": "NODE_ENV=production node src/deploy.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
