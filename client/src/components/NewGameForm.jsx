@@ -3,18 +3,18 @@ import Button from "./Button";
 import "../style/NewGameForm.css"
 import validator from "validator";
 
-class Game{
-    constructor(player1, player2, score){
-        if (undefined === player1 || ! validator.isEmail(player1))
-          throw Error("Not a valid email address1");
-        else if (undefined === player2 || ! validator.isEmail(player2))
-          throw Error("Not a valid email address2");
-        else if (undefined === score || ! this.isValidScore(score))
-          throw Error("Not a valid score");
+class Game {
+    constructor(player1, player2, score) {
+        if (undefined === player1 || !validator.isEmail(player1))
+            throw Error("Not a valid email address1");
+        else if (undefined === player2 || !validator.isEmail(player2))
+            throw Error("Not a valid email address2");
+        else if (undefined === score || !this.isValidScore(score))
+            throw Error("Not a valid score");
         this.player1 = player1;
         this.player2 = player2;
         this.score = score;
-      }
+    }
 
     isValidScore = score => {
         let s0 = score[0];
@@ -38,11 +38,12 @@ class Game{
     }
 }
 
-class NewGameForm extends Component { 
+class NewGameForm extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            score: ["", ""]
+            score: ["", ""],
+            loading: false
         };
     }
 
@@ -53,7 +54,7 @@ class NewGameForm extends Component {
             let score = oldState.score;
             score[index] = Number.isInteger(value) ? value : "";
             if (score.length === 2 && score[0] === 8 && score[1] === 8) score = [8, 8, "", ""];
-            if (score.length === 4 && (score[0] !== 8 || score[1] !== 8)) score = score.slice(0,2);
+            if (score.length === 4 && (score[0] !== 8 || score[1] !== 8)) score = score.slice(0, 2);
             return { score: score };
         });
     };
@@ -64,12 +65,12 @@ class NewGameForm extends Component {
             let game = new Game(this.props.user, this.props.opponent, this.state.score);
             fetch("/api/games/", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(game)
-            }).then(response => 
-                response.ok ? this.props.onSubmit() : response.text().then(
-                    err => this.props.onError(new Error(err))))
-            .catch(err => this.props.onError(new Error(err)));
+            }).then(response => response.ok ?
+                    this.setState({loading: false}, this.props.onSubmit) : 
+                    response.text().then(err => this.props.onError(new Error(err)))
+            ).catch(err => this.props.onError(new Error(err)));
         } catch (e) {
             this.props.onError(e);
         }
@@ -79,18 +80,18 @@ class NewGameForm extends Component {
         return (
             <form className="game-form">
                 <div className="scores-box">
-                    <div className="score-box">   
-                        <label>Proset Score:</label> 
-                        <ScoreBox 
+                    <div className="score-box">
+                        <label>Proset Score:</label>
+                        <ScoreBox
                             max="9"
                             score={this.state.score[0]}
                             index="0"
                             alterScore={this.alterScore}
                             owner="Your"
                         />
-                        
+
                         <label>-</label>
-                        <ScoreBox 
+                        <ScoreBox
                             max="9"
                             score={this.state.score[1]}
                             index="1"
@@ -98,10 +99,10 @@ class NewGameForm extends Component {
                             owner={`${this.props.opponentName}'s`}
                         />
                     </div>
-                    {this.state.score.length !== 4 ? null : 
+                    {this.state.score.length !== 4 ? null :
                         <div className="score-box">
                             <label>Tiebreak Score:</label>
-                            <ScoreBox 
+                            <ScoreBox
                                 max="20"
                                 score={this.state.score[2]}
                                 index="2"
@@ -109,7 +110,7 @@ class NewGameForm extends Component {
                                 owner="Your Tiebreak"
                             />
                             <label>-</label>
-                            <ScoreBox 
+                            <ScoreBox
                                 max="20"
                                 score={this.state.score[3]}
                                 index="3"
@@ -118,27 +119,30 @@ class NewGameForm extends Component {
                             />
                         </div>}
                 </div>
-                <Button icon="icono-check" onClick={this.submitForm}/>
+                <Button
+                    loading={this.state.loading}
+                    icon="icono-check"
+                    onClick={() => this.setState({ loading: true }, this.submitForm)} />
             </form>);
     }
 }
 
 class ScoreBox extends Component {
-    render(){
+    render() {
         return (
             <React.Fragment>
-                <input 
+                <input
                     className="field"
-                    type="number" 
+                    type="number"
                     min="0"
                     max={this.props.max}
-                    value={this.props.score} 
+                    value={this.props.score}
                     list={"datalist" + this.props.index}
-                    placeholder={`${this.props.owner} Score`} 
-                    onChange={e => this.props.alterScore(this.props.index, 
-                        Number.parseInt(e.target.value))}/>
+                    placeholder={`${this.props.owner} Score`}
+                    onChange={e => this.props.alterScore(this.props.index,
+                        Number.parseInt(e.target.value))} />
                 <datalist id={"datalist" + this.props.index} type="number">
-                    {[...Array(Number.parseInt(this.props.max) + 1).keys()].map(n => 
+                    {[...Array(Number.parseInt(this.props.max) + 1).keys()].map(n =>
                         <option key={n} value={n} />)}
                 </datalist>
             </React.Fragment>

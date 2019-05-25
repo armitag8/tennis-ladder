@@ -6,7 +6,7 @@ class PlayerRow extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            edit: false
+            edit: false,
         };
     }
 
@@ -14,7 +14,6 @@ class PlayerRow extends Component {
         return (<div className="player-row">
             <div className="row-bar" >
                 <Button  
-                    loading={this.props.loading}
                     icon={this.state.edit ? "icono-cross" : "icono-sliders"}
                     onClick={() => this.props.user === this.props._id ? null :
                         this.setState(s => ({ edit: !s.edit }))}
@@ -35,7 +34,7 @@ class PlayerRow extends Component {
                     user={this.props.user}
                     opponent={this.props._id}
                     opponentName={this.props.firstname}
-                    onSubmit={() => this.setState({ edit: false }, this.props.updatePlayers)}
+                    onSubmit={() => this.setState({ edit: false}, this.props.updatePlayers)}
                     onError={this.props.onError}
                 />}
         </div>);

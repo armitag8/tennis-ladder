@@ -12,6 +12,10 @@
     box-shadow: 2px 1px 1px #3C3D3F;
 }
 
+.btn *{
+  z-index: 1;
+}
+
 .btn:hover {
   background: #3C3D3F;
   color: #ffffff;

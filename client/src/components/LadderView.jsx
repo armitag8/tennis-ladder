@@ -74,12 +74,12 @@ class LadderView extends Component {
             else if (response.status === 401)
                 this.props.logout();
             else
-                console.log(response);
+                this.setState({loading: false}, () => console.log(response));
         }).catch(console.log));
 
     updatePlayers = () => this.getPage(0);
 
-    getNextPage = () => this.getPage(this.state.page + 1);
+    getNextPage = async () => await this.state.loading ? null : this.getPage(this.state.page + 1);
 
     componentDidMount = () => this.props.user ? this.updatePlayers() : this.props.logout();
 

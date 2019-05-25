@@ -16,6 +16,7 @@
 .tabs{
     height: 100%;
     width: 50%;
+    z-index: 9999;
 }
 
 @media all and (max-width: 640px) {
