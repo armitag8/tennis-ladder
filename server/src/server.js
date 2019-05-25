@@ -196,7 +196,7 @@ router.use(session({
   store: new NedbStore({ filename: 'db/sessions.db' })
 }));
 router.use(express.static(path.join(__dirname,
-  isProduction() ? "../client/build/" : "../client/public/")
+  isProduction() ? "../../client/build/" : "../../client/public/")
 ));
 router.use(logger("dev"));
 router.use(express.json());
