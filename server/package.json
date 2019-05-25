@@ -17,7 +17,8 @@
     "validator": "^10.11.0"
   },
   "scripts": {
-    "start": "nodemon server.js",
+    "start": "nodemon src/start.js",
+    "deploy": "node src/deploy.js",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

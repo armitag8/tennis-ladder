@@ -1,5 +1,5 @@
-const config = require("../config.json");
-const credentials = require("./credentials.json");
+const config = require("../../config.json");
+const credentials = require("../credentials.json");
 const express = require("express");
 const path = require("path");
 const logger = require("morgan");
@@ -8,7 +8,7 @@ const fs = require("fs");
 const validator = require("validator");
 const session = require("express-session");
 const cookie = require("cookie");
-const database = require("./src/database.js");
+const database = require("./database.js");
 const NedbStore = require('connect-nedb-session')(session);
 const mailer = require("nodemailer");
 const schedule = require("node-schedule");
@@ -404,34 +404,41 @@ const autoScheduleGames = () => {
 }
 
 const inviteList = (list, isMod=false) => list.forEach(user => 
-  database.inviteUser(user).then(
+  validator.isEmail(user) ? database.inviteUser(user).then(
     invite => sendInvite(
       invite,
       user,
       () => console.log(`${isMod ? "Moderator: " : "User: "}${user} has been invited.`),
       () => console.log("Email failure"),
       isMod
-  )).catch(console.log)
+  )).catch(console.log) : console.log(`invalid email: ${user}`)
 );
 
-if (isProduction()) {
-  inviteList(credentials.mods, true);
-  autoScheduleGames();
-} else {
-  inviteList(credentials.test);
-  setTimeout(() => database.scheduleGames(thisWeek(), sendGameNotification), 100000);
+const initialize = () => {
+  if (isProduction()) {
+    inviteList(credentials.mods, true);
+    autoScheduleGames();
+  } else {
+    inviteList(credentials.test);
+    setTimeout(() => database.scheduleGames(thisWeek(), sendGameNotification), 100000);
+  };
+  
+  database.inviteUser(config.admin, true)
+    .then(() => database.addUser(new User({
+      _id: config.admin,
+      firstname: config.owner.split(" ")[0],
+      lastname: config.owner.split(" ")[1],
+      password: credentials.admin,
+      position: 1,
+      wins: 0,
+      losses: 0
+    })).then(console.log)
+    ).catch(console.log);
+}
+
+module.exports = {
+  inviteList: inviteList,
+  initialize: initialize,
+  startServer: startServer,
+  router: router  
 };
-
-database.inviteUser(config.admin, true)
-  .then(() => database.addUser(new User({
-    _id: config.admin,
-    firstname: config.owner.split(" ")[0],
-    lastname: config.owner.split(" ")[1],
-    password: credentials.admin,
-    position: 1,
-    wins: 0,
-    losses: 0
-  })).then(console.log)
-  ).catch(console.log);
-
-startServer(router);
