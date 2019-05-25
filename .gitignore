@@ -72,4 +72,5 @@ package-lock.json
 # Deployment specifics
 config.json
 credentials.json
+user-list.json
 
