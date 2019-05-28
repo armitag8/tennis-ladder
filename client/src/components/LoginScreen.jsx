@@ -39,7 +39,7 @@ class LoginScreen extends Component {
 
     validate = () => {
         let s = this.state;
-        if (! validator.isEmail(s._id))
+        if (! validator.isEmail(s._id.trim()))
             this.handleError(Error("Username must be a valid email address."));
         else if (s.password.length < 5) 
             this.handleError(Error("Password must have at least 5 characters"));
@@ -54,7 +54,7 @@ class LoginScreen extends Component {
         else if (s.mode === "Sign Up" && ! validator.isAlpha(s.lastname))
             this.handleError(Error("Last name may only contain alphabetic characters"));
         else
-            this.setState({ _id: s._id.toLowerCase(), valid: true });
+            this.setState({ _id: s._id.toLowerCase().trim(), valid: true });
     }
 
     handleError = (err) => {

@@ -101,7 +101,9 @@ let database = (function () {
             if (err) reject(DB_FAIL);
             else if (!invite) reject(new HTTPError(404, "Invite not found"));
             else invites.update({ _id: email }, { $set: { confirmed: true } },
-                err => err ? reject(DB_FAIL) : resolve(true));
+                err => err ? reject(DB_FAIL) : users.findOne({ _id: email }, 
+                    (err, user) => err ? reject(DB_FAIL) : resolve(user !== null)
+                    ));
         })
     );
 

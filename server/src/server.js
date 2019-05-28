@@ -38,6 +38,7 @@ const startServer = handler => {
     require("http").createServer(
       express().use((req, res) => res.redirect(`https://${req.headers.host}${req.url}`)).listen(80)
     );
+    autoScheduleGames();
   } else require("http").createServer(handler).listen(3001);
 }
 
@@ -322,7 +323,7 @@ const inviteEmail = (invite, isMod) => `<h2>Welcome</h2>
 </p>
 <p>
   You are receiving this email because we believe you have participated in our Tennis Ladder before,
-  or have expressed an interest in doing so this year, and we hope that you would like ot again.
+  or have expressed an interest in doing so this year, and we hope that you would like to again.
   If you have received this email in error (you are not a patron of ${config.club}), please ignore it.
 </p>
 `
@@ -349,8 +350,8 @@ router.post("/api/invite/:_id", checkMod, validateUserId, (req, res, next) =>
 // Confirm Invite
 router.get("/api/invite/:_id/:code", validateUserId, (req, res, next) =>
   database.confirmInvite(req.params._id, validator.escape(req.params.code))
-    .then(() => {
-      res.setHeader("Set-Cookie", cookie.serialize(
+    .then(exists => {
+      if (!exists) res.setHeader("Set-Cookie", cookie.serialize(
         "invite",
         req.params._id,
         { path: "/", maxAge: 60 * 30 }
@@ -416,7 +417,6 @@ const inviteList = (list, isMod=false) => list.forEach(user =>
 const initialize = () => {
   if (isProduction()) {
     inviteList(credentials.mods, true);
-    autoScheduleGames();
   } else {
     inviteList(credentials.test);
     setTimeout(() => database.scheduleGames(thisWeek(), sendGameNotification), 100000);
