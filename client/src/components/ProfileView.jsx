@@ -11,7 +11,8 @@ const blank = {
     lastname: "",
     valid: false,
     error: Error(""),
-    loading: false
+    loading: false,
+    user: {}
 };
 
 class ProfileView extends Component {
@@ -19,7 +20,7 @@ class ProfileView extends Component {
         super(props);
         this.state = blank;
     }
-    componentDidMount = () => this.props.user ? null : this.props.logout();
+    componentDidMount = () => this.props.user ? this.reload() : this.props.logout();
 
     onUpdate = (event) => {
         let newState = {}
@@ -33,7 +34,6 @@ class ProfileView extends Component {
             error: err
         });
     };
-
 
     validate = () => {
         let s = this.state;
@@ -53,6 +53,13 @@ class ProfileView extends Component {
             this.setState({ valid: true });
     };
 
+    reload = ()  => fetch(`/api/user/${this.props.user}`)
+        .then(response => 
+            response.json()
+                .then(user => this.setState({ user: user }))
+                .catch(err => this.props.onError(new Error(err))))
+        .catch(this.props.onError);
+
     updateProfile = () => this.setState({ loading: true }, () => fetch(`/api/user/${this.props.user}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -61,7 +68,7 @@ class ProfileView extends Component {
             lastname: this.state.lastname,
             password: this.state.password
         })
-    }).then(response => response.status === 200 ? this.setState(blank) :
+    }).then(response => response.status === 200 ? this.setState(blank, this.reload) :
         response.text().then(err => this.props.onError(new Error(err)))
     ).catch(this.props.onError));
 
@@ -76,9 +83,19 @@ class ProfileView extends Component {
     render() {
         return (
             <div className="view">
+                <div className="player-view">
+                    <h2>
+                        Your Profile
+                    </h2>
+                    <div className="submit-box">
+                        <div>{this.state.user.firstname} {this.state.user.lastname}</div>
+                        <div>{this.state.user._id}</div>
+                    </div>
+                </div>
+                
                 <form onSubmit={e => e.preventDefault()}>
                     <h2>
-                        Delete your profile
+                        Delete Your Profile
                     </h2>
                     <div className="submit-box">
                         <input
@@ -91,9 +108,9 @@ class ProfileView extends Component {
                         <Button loading={this.state.loading} icon="icono-trash" onClick={this.deleteProfile} />
                     </div>
                 </form>
-                <form onSubmit={e => { e.preventDefault() }}>
+                <form onSubmit={e => e.preventDefault()}>
                     <h2>
-                        Edit your profile
+                        Edit Your Profile
                     </h2>
                     <div className="submit-box">
                         <div className="fields-box">

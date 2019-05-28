@@ -229,6 +229,13 @@ router.get("/api/user/", isAuthenticated, (req, res, next) => {
     .catch(error => res.status(error.code).send(error.message));
 });
 
+// Get User Data
+router.get("/api/user/:_id", isAuthenticated, validateUserId, checkOwnerOrMod, (req, res, next) =>
+  database.getUser(req.params._id)
+    .then(user => res.json(user))
+    .catch(error => res.status(error.code).send(error.message))
+);
+
 // Remove User
 router.delete("/api/user/:_id", isAuthenticated, validateUserId, checkOwnerOrMod, (req, res, next) => {
   let userID = req.params._id;

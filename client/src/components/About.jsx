@@ -39,7 +39,7 @@ class About extends Component {
                     <li>8-8, then tie-break: 10-8</li>
                     <li>8-8, then tie-break: 15-13</li>
                 </ul>
-                <h2>Using this website</h2>
+                <h2>Using this Website</h2>
                 <p>
                     Once you have received an invitation via email, click the link in the email.
                     You can now create your account on the Login tab. Use the same email address
