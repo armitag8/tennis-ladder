@@ -1,8 +1,12 @@
-.player-row{
+.player-row {
     border: 2px black solid;
     border-radius: 10px;
     padding: 2px 5px 2px 5px;
     margin: 2px;
+}
+
+.player-row h3 {
+    margin: 0;
 }
 
 .row-bar{

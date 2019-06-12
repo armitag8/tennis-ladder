@@ -8,6 +8,7 @@
     justify-content: space-around;
     padding-bottom: 7px;
     text-align: center;
+    align-items: baseline;
 }
 
 .opponent {
@@ -15,15 +16,25 @@
 }
 
 .week{
-    width: 15%;
+    width: 20%;
 }
 
 .result{
-    width: 20%;
+    width: 15%;
 }
 
 .score {
     width: 25%;
+}
+
+.search-bar{
+    width: 100%;
+}
+
+.tiny-button{
+    padding: 0;
+    background: 0%;
+    border: none;
 }
 
 .past-games-column-headers{

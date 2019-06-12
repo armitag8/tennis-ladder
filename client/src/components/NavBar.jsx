@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import "../style/NavBar.css";
 import Button from "./Button";
 
-const toTitleCase = string => string[0].toUpperCase() + string.slice(1);
+const toTitleCase = string => (string[0] || "").toUpperCase() + string.slice(1);
 
 class NavBar extends Component {
 

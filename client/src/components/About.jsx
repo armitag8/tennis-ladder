@@ -21,9 +21,19 @@ class About extends Component {
                 </p>
                 <p>
                     Usually, two matches are scheduled for each player each week,
-                    but your ranking will only be affected if you play neither. 
+                    but your ranking will only be affected negatively if you play neither.
                     Expect matches to be scheduled automatically against the players 
                     immediately above and below you in the Ranking on Monday mornings.
+                </p>
+                <h2>How to Join</h2>
+                <p>
+                    Ask a court supervisor at {config.club} or contact:
+                </p>
+                <EmailCaptcha />
+                <p>
+                    This ladder can only be joined by invitation, in order to protect your data
+                    on the web. Invitations are typically granted for any members (or paying guests)
+                    of <a href={config.clubSite}>{config.club}</a>.
                 </p>
                 <h2>Match Structure</h2>
                 <p>
@@ -70,15 +80,15 @@ class About extends Component {
                     You will not be able to play a match twice against the same player within
                     the same week (Monday - Sunday).
                 </p>
-                <h2>How to Join</h2>
+                <h3>
+                    Challenges and Impromptu Matches
+                </h3>
                 <p>
-                    Ask a court supervisor at {config.club} or contact:
-                </p>
-                <EmailCaptcha />
-                <p>
-                    This ladder can only be joined by invitation, in order to protect your data
-                    on the web. Invitations are typically granted for any members (or paying guests)
-                    of <a href={config.clubSite}>{config.club}</a>.
+                    At any time, anyone at any position in the ladder may ask another player to 
+                    play a match. This could be done through the website, via email or in person.
+                    Players are under no obligation to accept these challenges, but the scores do
+                    count towards your ranking. Please record the score the same way as with a
+                    scheduled game.
                 </p>
             </div>
         );

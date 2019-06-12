@@ -21,10 +21,11 @@ const transporter = mailer.createTransport({
   }
 });
 
-
 const WEEK_IN_SECONDS = 7 * 24 * 60 * 60 * 1000;
 
 const isProduction = () => process.env.NODE_ENV === "production";
+
+const siteURL = isProduction() ? "https://" + config.publicURL : "http://localhost:3001";
 
 const thisWeek = () => Math.floor((new Date() - new Date(config.startDate)) / WEEK_IN_SECONDS) + 1;
 
@@ -52,14 +53,14 @@ const isAuthenticated = (req, res, next) => {
 const authenticate = (req, res) => {
   let user = req.params._id;
   req.session.user = user;
-  setUserCookie(user, res); 
-  res.setHeader("Set-Cookie", cookie.serialize(
+  setUserCookie(user, res);
+  res.append("Set-Cookie", cookie.serialize(
     "invite",
     "",
     { path: "/", maxAge: 1 }
   ));
-  if (isMod(req))  
-    res.setHeader("Set-Cookie", cookie.serialize(
+  if (isMod(req))
+    res.append("Set-Cookie", cookie.serialize(
       "mod",
       "true",
       { path: "/", maxAge: 60 * 60 * 24 * 31 }
@@ -70,7 +71,7 @@ const authenticate = (req, res) => {
 const unAuthenticate = (req, res, next) => {
   req.session.user = null;
   setUserCookie("", res);
-  res.setHeader("Set-Cookie", cookie.serialize(
+  res.append("Set-Cookie", cookie.serialize(
     "mod",
     "",
     { path: "/", maxAge: 60 * 60 * 24 * 31 }
@@ -83,7 +84,7 @@ const setUserCookie = (user, res) => res.setHeader("Set-Cookie",
     "user",
     user,
     { path: "/", maxAge: 60 * 60 * 24 * 31 }
-  )); 
+  ));
 
 const isMod = (req) => req.session.user === config.admin || credentials.mods.includes(req.session.user);
 
@@ -118,7 +119,7 @@ class User {
       throw Error("Not a valid user");
     else if (undefined === user._id || !validator.isEmail(user._id))
       throw Error("Not a valid email address");
-    if (user.password.length < 5) 
+    if (user.password.length < 5)
       throw Error("Password must have at least 5 characters");
     else if (validator.escape(user.password) !== user.password)
       throw Error("Password cannot contain: <, >, &, ', \" or /");
@@ -128,17 +129,11 @@ class User {
       throw Error("Not a valid first name");
     else if (!Number.isInteger(user.position) || user.position < 0)
       throw Error("Not a valid position")
-    else if (!Number.isInteger(user.wins) || user.wins < 0)
-      throw Error("Not a valid number of wins")
-    else if (!Number.isInteger(user.losses) || user.losses < 0)
-      throw Error("Not a valid number of losses")
     this._id = user._id.toLowerCase();
     this.password = user.password;
     this.firstname = user.firstname;
     this.lastname = user.lastname;
     this.position = user.position;
-    this.wins = user.wins;
-    this.losses = user.losses;
   }
 }
 
@@ -156,11 +151,14 @@ class Game {
       throw Error("Not a valid 'played' flag");
     else if (this.played && (undefined === game.score || !this.isValidScore(game.score)))
       throw Error("Not a valid score");
+    else if (this.confirmed && this.confirmed !== true)
+      throw Error("Not a valid 'confirmed' flag");
     this.player1 = game.player1;
     this.player2 = game.player2;
     this.week = game.week || thisWeek();
     this.score = game.score;
     this.played = game.played || false;
+    this.confirmed = game.confirmed || false;
   }
 
   isValidScore(score) {
@@ -221,10 +219,10 @@ router.post("/api/user/:_id", validateUserId, checkIdMatchesBody, sanitizeUser,
       .catch(error => res.status(error.code).send(error.message))
 );
 
-// Get Ranking
+// Get Rankings
 router.get("/api/user/", isAuthenticated, (req, res, next) => {
   let pageNumber = parseInt(req.query.page || "0", 10);
-  database.getUsers(pageNumber)
+  database.getUsers(pageNumber, validator.escape(req.query.search || ""))
     .then(users => users.length > 0 ? res.json(users) : res.status(204).send())
     .catch(error => res.status(error.code).send(error.message));
 });
@@ -258,13 +256,86 @@ router.put("/api/user/:_id/position/:pos", checkMod, validateUserId, (req, res, 
 router.patch("/api/user/:_id", isAuthenticated, validateUserId, checkOwnerOrMod, (req, res, next) => {
   let firstname = req.body.firstname;
   let lastname = req.body.lastname;
-  if ((! firstname || validator.isAlpha(firstname)) && (! lastname || validator.isAlpha(lastname)))
+  if ((!firstname || validator.isAlpha(firstname)) && (!lastname || validator.isAlpha(lastname)))
     database.updateUser(req.params._id, firstname, lastname, validator.escape(req.body.password))
       .then(result => res.json(result))
       .catch(error => res.status(error.code).send(error.message));
   else
     res.status(422).send("Invalid name(s)");
 });
+
+// ADMIN: Schedule a Game
+router.post("/api/games/scheduled/:player1/:player2", isAuthenticated, checkMod, (req, res, next) => {
+  let game = new Game({
+    player1: req.params.player1,
+    player2: req.params.player2,
+  });
+  database.scheduleGame(game)
+    .then(result => {
+      sendGameNotification(game);
+      res.json(result);
+    }).catch(error => res.status(error.code).send(error.message))
+});
+
+// ADMIN: Get all Scheduled Games
+router.get("/api/games/scheduled/", isAuthenticated, checkMod, (req, res, next) =>
+  database.getAllScheduledGames()
+    .then(docs => res.json(docs))
+    .catch(error => res.status(error.code).send(error.message))
+);
+
+const gameRejectedEmail = async game => (
+  `
+<h3>Match Score Rejected</h3>
+<p>
+Your opponent, ${await makeMailToLink(game.player2)}, 
+rejected the match score you posted for week ${game.week}.
+</p>
+<p>
+Please contact your opponent to find out why. Either of you may now enter a new score for this match.
+You may respond to this email or contact a court supervisor for additional help.
+</p>
+` + emailFooter);
+
+
+const matchCancelledEmail = (admin, opponent, week) => (
+  `
+<h3>Scheduled Match Cancelled</h3>
+<p>
+Your match against ${opponent} for week ${week} was cancelled by ${admin}.
+</p>
+<p>
+You may still play this match, by challenge, if you wish. 
+You may respond to this email or contact a court supervisor to find out why your match was cancelled.
+</p>
+` + emailFooter);
+
+// Delete Game
+router.delete("/api/games/:_id", isAuthenticated, (req, res, next) =>
+  !validator.isAlphanumeric(req.params._id) ? res.status(422).send("invalid ID") :
+    database.deleteGame(req.params._id, isMod(req))
+      .then(async game => Promise.all(game.played ?
+          [sendEmail(game.player1, "Match Score Rejected", await gameRejectedEmail(game))] :
+          [
+            sendEmail(game.player1, "Scheduled Match Cancelled", matchCancelledEmail(
+              req.session.user, await makeMailToLink(game.player2), game.week)),
+            sendEmail(game.player2, "Scheduled Match Cancelled", matchCancelledEmail(
+              req.session.user, await makeMailToLink(game.player1), game.week))
+          ]).then(result => res.json(result))
+          .catch(error => res.status(error.code).send(error.message))
+      ).catch(error => res.status(error.code).send(error.message))
+);
+
+// ADMIN: Delete game by players and week
+router.delete("/api/games/:player1/:player2/:week", isAuthenticated, checkMod, (req, res, next) =>
+  !validator.isEmail(req.params.player1) ||
+    !validator.isEmail(req.params.player2) ||
+    !validator.isInt(req.params.week) ?
+    res.status(422).send("invalid ID") :
+    database.deleteGameAdmin(req.params.player1, req.params.player2, Number.parseInt(req.params.week))
+      .then(result => res.json(result))
+      .catch(error => res.status(error.code).send(error.message))
+);
 
 // Get Scheduled Games
 router.get("/api/games/scheduled/:_id", isAuthenticated, validateUserId, (req, res, next) =>
@@ -280,52 +351,99 @@ router.get("/api/games/past/:_id", isAuthenticated, validateUserId, (req, res, n
     .catch(error => res.status(error.code).send(error.message))
 );
 
-const beautifyAddress = (name, address) => `${name} 🎾 <${validator.normalizeEmail(address)}>`;
-
-const gamePlayedEmail = game => (
-`
-<h2>Match Recorded</h2>
-<p>A match has been recorded:</p>
-<h3>Score<h3>
-<ul>
-  <li>${game.player1}: ${game.score[0]}</li>
-  <li>${game.player2}: ${game.score[1]}</li>
-</ul>
-${game.score.length < 3 ? "" : `
-<h4>Tiebreak</h4>
-<ul>
-  <li>${game.player1}: ${game.score[2]}</li>
-  <li>${game.player2}: ${game.score[3]}</li>
-</ul>`}
-`
+// Get Past Games (Filtered)
+router.get("/api/games/past/:_id/:opponent", isAuthenticated, validateUserId, (req, res, next) =>
+  !validator.isEmail(req.params.opponent) ? res.status(422).send("Not a valid email") :
+    database.getPastGames(req.params._id, req.params.opponent)
+      .then(docs => res.json(docs))
+      .catch(error => res.status(error.code).send(error.message))
 );
+
+const emailFooter = (
+  `
+<footer>
+<p>
+You are receiving this email because you are a member of ${config.club}'s Tennis Ladder.
+If you would like to <em>unsubscribe</em>, you must delete your account 
+<a href="${siteURL}/profile">here</a>.
+</p>
+<p>
+If you have received this email in error (you are not a patron of ${config.club}), please ignore it,
+or respond to it to alert us if the issue is ongoing.
+</p>
+</footer>
+`);
+
+const beautifyAddress = async address => {
+  let user = await database.getUser(address)
+  return `${user.firstname} ${user.lastname} 🎾 <${validator.normalizeEmail(address)}>`;
+}
+
+const makeMailToLink = async address => {
+  let user = await database.getUser(address);
+  return `<a href="mailto:${address}">${user.firstname} ${user.lastname}</a>`;
+}
+
+const gamePlayedEmail = (opponent, score) => (
+  `
+<h2>Match Score Recorded</h2>
+<p>Did you just play a match? Your opponent, ${opponent} recorded a score:</p>
+<h3>Score</h3>
+<ul>
+  <li>${opponent}: ${score[0]}</li>
+  <li>You: ${score[1]}</li>
+</ul>
+${score.length < 3 ? "" : `
+<h3>Tiebreak</h3>
+<ul>
+  <li>${opponent}: ${score[2]}</li>
+  <li>You: ${score[3]}</li>
+</ul>`}
+<p>Please <strong>confirm</strong> this score on <a href=${siteURL}/matches>the website</a></p>
+` + emailFooter);
+
+const sendEmail = (to, subject, content) => new Promise((resolve, reject) => transporter.sendMail({
+  from: beautifyAddress(config.admin),
+  to: to,
+  subject: subject,
+  html: content
+}, err => err ? reject("Email failure") : resolve(true)));
 
 // Record Game
 router.post("/api/games/", isAuthenticated, (req, res, next) => {
   try {
     let game = new Game(req.body);
+    if (req.session.user !== game.player1 && !isMod())
+      return res.status(422).send("Submitter must be player1 or admin");
     database.playGame(game)
-      .then(ok => {
-        transporter.sendMail({
-          from: beautifyAddress("Tennis Ladder", config.admin),
-          to: `${game.player1}, ${game.player2}`,
-          subject: "New Match Score",
-          html: gamePlayedEmail(game)
-        }, err => err ? res.status(500).send("Email failure") : res.status(201).send());
-      }).catch(error => res.status(error.code).send(error.message));
+      .then(async ok => transporter.sendMail({
+        from: beautifyAddress(config.admin),
+        to: game.player2,
+        subject: "Confirm New Match Score",
+        html: gamePlayedEmail(await makeMailToLink(game.player1), game.score)
+      }, err => err ? res.status(500).send("Email failure") : res.status(201).send())
+      ).catch(error => res.status(error.code).send(error.message));
   } catch (e) {
     res.status(422).send(e.message);
   }
 });
 
+// Confirm Game Score
+router.put("/api/games/:_id/confirmation", isAuthenticated, (req, res, next) =>
+  !validator.isAlphanumeric(req.params._id) ? res.status(422).send("Invalid Game ID") :
+    database.confirmGame(req.params._id, req.session.user)
+      .then(result => res.json(result))
+      .catch(error => res.status(error.code).send(error.message))
+);
+
 const inviteEmail = (invite, isMod) => `<h2>Welcome</h2>
 <p>
-  You've been invited to join ${config.club}'s Tennis Ladder${isMod ? 
-    " and will be granted <em>moderator</em> privileges (inviting, deleting and moving players)" 
+  You've been invited to join ${config.club}'s Tennis Ladder${isMod ?
+    " and will be granted <em>moderator</em> privileges (inviting, deleting and moving players)"
     : ""}. Click the link below if you'd like to join or to learn more.
 </p>
 <p>
-<a href=${isProduction() ? "https://" + config.publicURL : "http://localhost:3001"}/api/invite/${
+<a href=${siteURL}/api/invite/${
   encodeURIComponent(invite._id)}/${invite.code}>Join Now</a>
 </p>
 <p>
@@ -335,9 +453,9 @@ const inviteEmail = (invite, isMod) => `<h2>Welcome</h2>
 </p>
 `
 
-const sendInvite = (invite, to, succ, fail, isMod=false) =>
+const sendInvite = (invite, to, succ, fail, isMod = false) =>
   transporter.sendMail({
-    from: beautifyAddress("Tennis Ladder", config.admin),
+    from: beautifyAddress(config.admin),
     to: to,
     subject: "Join Our Tennis Ladder",
     html: inviteEmail(invite, isMod)
@@ -368,37 +486,49 @@ router.get("/api/invite/:_id/:code", validateUserId, (req, res, next) =>
     .catch(error => res.status(error.code).send(error.message))
 );
 
-const gameScheduledEmail = game => (
+// Delete Invite
+router.delete("/api/invite/:_id", validateUserId, checkOwnerOrMod, (req, res, next) => 
+    database.removeInvite(req.params._id)
+      .then(result => res.json(result))
+      .catch(error => res.status(error.code).send(error.message))
+);
+
+const gameScheduledEmail = (game, player1, player2) => (
   `
-<h2>New Match: Week ${game.week}</h2>
+<h2>New Match Scheduled: Week ${game.week}</h2>
 <p>
   A new match has been scheduled this week between the two recipients of this email:
 </p>
 <ol>
-  <li><a href="mailto:${game.player1}">${game.player1}</a></li>
-  <li><a href="mailto:${game.player2}">${game.player2}</a></li>
+  <li>${player1}</li>
+  <li>${player2}</li>
 </ol>
 <p>
   Please, if possible, arrange a time to play when is convenient for both of you.
 </p>
 <p>
-  Visit <a href="${config.publicURL}"">The Website</a> for more information and to record 
+  Visit <a href="${siteURL}">the website</a> for more information and to record 
   the score once the match has been played.
 </p>
 <p>
   Reminder: playing no games in a week may affect your ranking in the ladder. 
   Missing too many weeks may result in your removal from the ladder.
 </p>
-`
-);
+` + emailFooter);
 
-const sendGameNotification = game => {
-  transporter.sendMail({
-    from: beautifyAddress("Tennis Ladder", config.admin),
-    to: `${game.player1}, ${game.player2}`,
-    subject: "Match Scheduled",
-    html: gameScheduledEmail(game)
-  }, (err, info) => err ? console.log(err) : console.log(info.response))
+const sendGameNotification = async game => {
+  try {
+    let player1MailTo = await makeMailToLink(game.player1);
+    let player2MailTo = await makeMailToLink(game.player2);
+    transporter.sendMail({
+      from: beautifyAddress(config.admin),
+      to: `${game.player1}, ${game.player2}`,
+      subject: "Match Scheduled",
+      html: gameScheduledEmail(game, player1MailTo, player2MailTo)
+    }, (err, info) => err ? console.log(err) : console.log(info.response))
+  } catch (e) {
+    console.log(e.message);
+  }
 }
 
 const autoScheduleGames = () => {
@@ -410,7 +540,7 @@ const autoScheduleGames = () => {
     () => console.log(`scheduled games for week ${thisWeek()}`));
 }
 
-const inviteList = (list, isMod=false) => list.forEach(user => 
+const inviteList = (list, isMod = false) => list.forEach(user =>
   validator.isEmail(user) ? database.inviteUser(user).then(
     invite => sendInvite(
       invite,
@@ -418,7 +548,7 @@ const inviteList = (list, isMod=false) => list.forEach(user =>
       () => console.log(`${isMod ? "Moderator: " : "User: "}${user} has been invited.`),
       () => console.log("Email failure"),
       isMod
-  )).catch(console.log) : console.log(`invalid email: ${user}`)
+    )).catch(console.log) : console.log(`invalid email: ${user}`)
 );
 
 const initialize = () => {
@@ -428,7 +558,7 @@ const initialize = () => {
     inviteList(credentials.test);
     setTimeout(() => database.scheduleGames(thisWeek(), sendGameNotification), 100000);
   };
-  
+
   database.inviteUser(config.admin, true)
     .then(() => database.addUser(new User({
       _id: config.admin,
@@ -446,5 +576,5 @@ module.exports = {
   inviteList: inviteList,
   initialize: initialize,
   startServer: startServer,
-  router: router  
+  router: router
 };

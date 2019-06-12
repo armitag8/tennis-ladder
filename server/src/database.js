@@ -12,6 +12,9 @@ let database = (function () {
     const games = new Datastore({ filename: GAMES_DB_FILE, autoload: true });
     const invites = new Datastore({ filename: INVITES_DB_FILE, autoload: true });
 
+    games.update({ played: true }, { $set: { confirmed: true } }, { multi: true });
+    users.update({}, { $unset: { wins: true, losses: true } }, { multi: true });
+
     const HTTPError = function () {
         return function (code, message) {
             this.code = code;
@@ -101,10 +104,17 @@ let database = (function () {
             if (err) reject(DB_FAIL);
             else if (!invite) reject(new HTTPError(404, "Invite not found"));
             else invites.update({ _id: email }, { $set: { confirmed: true } },
-                err => err ? reject(DB_FAIL) : users.findOne({ _id: email }, 
+                err => err ? reject(DB_FAIL) : users.findOne({ _id: email },
                     (err, user) => err ? reject(DB_FAIL) : resolve(user !== null)
-                    ));
+                ));
         })
+    );
+
+    module.removeInvite = userID => new Promise((resolve, reject) =>
+        invites.remove({ _id: userID }, (err, numRemoved) =>
+            err ? reject(DB_FAIL) : (numRemoved === 0 ?
+                reject(new HTTPError(404, "Invite not found")) :
+                resolve(true)))
     );
 
     module.addUser = user => new Promise((resolve, reject) =>
@@ -133,11 +143,34 @@ let database = (function () {
         })
     );
 
-    const USERS_PER_PAGE = 10;
-    module.getUsers = pageNumber => new Promise((resolve, reject) =>
-        users.find({}).sort({ position: 1 }).skip(USERS_PER_PAGE * pageNumber).limit(USERS_PER_PAGE)
-            .exec((err, foundUsers) => err ? reject(DB_FAIL) : resolve(foundUsers.map(removePassword)))
-    );
+    const getWinsLosses = user => new Promise((resolve, reject) => {
+        let wins = 0;
+        let losses = 0;
+        games.find(
+            { $or: [{ player1: user._id }, { player2: user._id }], played: true, confirmed: true },
+            (err, games) => err ? reject(DB_FAIL) : Promise.all(games.map(
+                game => new Promise(resolve => resolve(
+                    findWinner(game.score) === 1 && game.player1 === user._id ? ++wins : ++losses)))
+            ).then(() => {
+                user.wins = wins;
+                user.losses = losses;
+                resolve(user);
+            })
+        );
+    });
+
+    const USERS_PER_PAGE = 15;
+    module.getUsers = (pageNumber, query = "") => new Promise((resolve, reject) => {
+        let search = new RegExp(query, "gi");
+        users.find({ $or: [{ firstname: search }, { lastname: search }, { _id: search }] })
+            .sort({ position: 1 }).skip(USERS_PER_PAGE * pageNumber).limit(USERS_PER_PAGE)
+            .exec((err, foundUsers) => err ? reject(DB_FAIL) : query === "" ?
+                Promise.all(foundUsers.map(removePassword).map(getWinsLosses))
+                    .then(ranking => resolve(ranking))
+                    .catch(err => reject(err)) :
+                resolve(foundUsers.map(removePassword))
+            );
+    });
 
     module.deleteUser = userID => new Promise((resolve, reject) => users.findOne(
         { _id: userID }, (err, user) => {
@@ -195,8 +228,8 @@ let database = (function () {
             });
         }));
 
-    module.scheduleGames = (week, sendEmail) => users.find({}, (err, users) =>
-        err ? console.log(err) : users.forEach((user, index) => {
+    module.scheduleGames = (week, sendEmail) => users.find({}).sort({ position: 1 }).exec(
+        (err, users) => err ? console.log(err) : users.forEach((user, index) => {
             if (index !== 0) {
                 let game = {
                     player1: user._id,
@@ -229,9 +262,38 @@ let database = (function () {
         })
     );
 
-    module.getPastGames = player => new Promise((resolve, reject) => {
+    module.deleteGameAdmin = (player1, player2, week) => new Promise((resolve, reject) =>
+        games.remove({
+            $or: [
+                { player1: player1, player2: player2 },
+                { player1: player2, player2: player1 }
+            ],
+            week: week
+        }, (err, numRemoved) => {
+            if (err) reject(DB_FAIL);
+            else if (!numRemoved) reject(new HTTPError(404, "This match does not exist"));
+            else resolve(true);
+        }));
+
+    module.deleteGame = (gameID, admin = false) => new Promise((resolve, reject) => {
+        let whichGames = { _id: gameID };
+        if (!admin) whichGames.confirmed = false;
+        games.findOne(whichGames, (err, game) =>
+            err ? reject(DB_FAIL) : games.remove(whichGames, (err, numRemoved) => {
+                if (err) reject(DB_FAIL);
+                else if (!numRemoved) reject(new HTTPError(404, "This match does not exist"));
+                else resolve(game);
+            })
+        );
+    });
+
+    module.getPastGames = (player, opponent = null) => new Promise((resolve, reject) => {
+        opponent = opponent || new RegExp("", "gi");
         games.find({
-            $or: [{ player1: player }, { player2: player }],
+            $or: [
+                { player1: player, player2: opponent, confirmed: true },
+                { player1: opponent, player2: player }
+            ],
             played: true
         }, (err, foundGames) => {
             if (err) reject(DB_FAIL);
@@ -254,7 +316,9 @@ let database = (function () {
                                 },
                                 week: game.week,
                                 score: game.score,
-                                win: findWinner(game.score) === 1 && isPlayer1
+                                win: (findWinner(game.score) === 1 && isPlayer1 ||
+                                    findWinner(game.score) === 2 && !isPlayer1),
+                                confirmed: game.confirmed
                             }
                         });
                         resolve(result);
@@ -275,11 +339,19 @@ let database = (function () {
                     game => game.player1 === player ? game.player2 : game.player1);
                 users.find({ _id: { $in: opponents } }, (err, players) => {
                     if (err) reject(DB_FAIL);
-                    else resolve(players.map(removePassword));
+                    else Promise.all(players.map(removePassword).map(getWinsLosses))
+                        .then(rankedPlayers => resolve(rankedPlayers))
+                        .catch(err => reject(err));
                 });
             };
         });
     });
+
+    module.getAllScheduledGames = () => new Promise((resolve, reject) =>
+        games.find({ played: false }, (err, foundGames) =>
+            err ? reject(DB_FAIL) : resolve(foundGames)
+        )
+    )
 
 
     module.playGame = game => new Promise((resolve, reject) =>
@@ -294,43 +366,53 @@ let database = (function () {
                 reject(DB_FAIL);
             else if (foundGame && foundGame.played)
                 reject(new HTTPError(409, "This game has already been played"));
-            else {
-                let id = foundGame ? foundGame._id : "this is not an id, probably";
-                let player1Wins = findWinner(game.score) === 1;
-                let winner = player1Wins ? game.player1 : game.player2;
-                let loser = player1Wins ? game.player2 : game.player1;
-                users.find({ $or: [{ _id: winner }, { _id: loser }] }).sort({ position: 1 }).exec(
-                    (err, foundUsers) => {
+            else
+                users.find({ $or: [{ _id: game.player1 }, { _id: game.player2 }] })
+                    .sort({ position: 1 }).exec((err, foundUsers) => {
                         game.played = true;
                         if (err)
                             reject(DB_FAIL);
                         else if (foundUsers.length !== 2)
                             reject(new HTTPError(404, "Player(s) not found"));
+                        else if (foundGame)
+                            games.update({ _id: foundGame._id }, game,
+                                err => err ? reject(DB_FAIL) : resolve(true));
                         else
-                            games.update({ _id: id }, game, { upsert: true }, () => {
-                                users.update({ _id: winner }, { $inc: { wins: 1 } });
-                                users.update({ _id: loser }, { $inc: { losses: 1 } });
-                                if (foundUsers[0]._id === loser) {
-                                    users.update(
-                                        {
-                                            $and: [
-                                                { position: { $gte: foundUsers[0].position } },
-                                                { position: { $lt: foundUsers[1].position } }
-                                            ]
-                                        },
-                                        { $inc: { position: 1 } },
-                                        { multi: true },
-                                        err => err ? reject(DB_FAIL) : users.update(
-                                            { _id: winner }, { $set: { position: foundUsers[0].position } }
-                                        ));
-                                }
-                                resolve(true)
-                            });
-                    }
-                );
+                            games.insert(game, err => err ? reject(DB_FAIL) : resolve(true));
+                    });
+        }));
+
+    module.confirmGame = (gameID, userID) => new Promise((resolve, reject) =>
+        games.findOne({ _id: gameID }, (err, game) => {
+            if (err) reject(DB_FAIL);
+            else if (game.confirmed) resolve(false);
+            else {
+                if (game.player2 !== userID && userID !== "admin")
+                    return reject("Cannot confirm game if not admin or player2");
+                let player1Wins = findWinner(game.score) === 1;
+                let winner = player1Wins ? game.player1 : game.player2;
+                let loser = player1Wins ? game.player2 : game.player1;
+                users.update({ _id: winner }, { $inc: { wins: 1 } });
+                users.update({ _id: loser }, { $inc: { losses: 1 } });
+                games.update({ _id: gameID }, { $set: { confirmed: true } })
+                users.find({ $or: [{ _id: game.player1 }, { _id: game.player2 }] })
+                    .sort({ position: 1 }).exec((err, foundUsers) =>
+                        (foundUsers[0]._id === winner) ? resolve(true) : users.update(
+                            {
+                                $and: [
+                                    { position: { $gte: foundUsers[0].position } },
+                                    { position: { $lt: foundUsers[1].position } }
+                                ]
+                            },
+                            { $inc: { position: 1 } },
+                            { multi: true },
+                            err => err ? reject(DB_FAIL) : users.update(
+                                { _id: winner },
+                                { $set: { position: foundUsers[0].position } },
+                                err => err ? reject(DB_FAIL) : resolve(true)
+                            )));
             }
-        })
-    )
+        }));
 
     return module;
 })();

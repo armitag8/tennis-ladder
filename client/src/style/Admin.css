@@ -4,16 +4,37 @@
   height: 60px;
 }
 
+@media all and (min-width: 640px) {
+  .week-field{
+    width: 60px;
+  }
+}
+
+table{
+  width: 100%;
+}
+
+td {
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+td:last-child{
+  width: 10px;
+}
+
 @media all and (max-width: 640px) {
   .admin{
     flex-direction: column;
     align-items: center;
     height: auto;
   }
-  .admin * {
+  .admin .field {
     width: 80%;
   }
-  .admin input{
+  .admin select, .admin .week-field{
     width: 75%;
   }
 }
