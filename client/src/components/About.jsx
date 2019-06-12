@@ -90,6 +90,29 @@ class About extends Component {
                     count towards your ranking. Please record the score the same way as with a
                     scheduled game.
                 </p>
+                <h3>
+                    Missing Matches
+                </h3>
+                <p>
+                    For now, if you find that you and your opponent cannot find time to play,
+                    you can push the match to next week, or just ignore it. Old scheduled matches 
+                    that remain unplayed will be deleted regularly.
+
+                    As the season progresses, we may have to begin removing players that do not
+                    participate or penalizing those that do so irregularly. Your input will help
+                    us make this decision.
+                </p>
+                <h3>
+                    Taking A Break or Vacation
+                </h3>
+                <p>
+                    If you would like to take some time off the ladder, just delete your profile
+                    or ask a court supervisor to do so for you. When you rejoin the ladder (you may
+                    reuse your invite or ask for another), your scores will still be recorded, but
+                    your ranking will be at the bottom. To have your ranking altered manually,
+                    contact a court supervisor or:
+                </p>
+                <EmailCaptcha />
             </div>
         );
     }

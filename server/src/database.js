@@ -12,9 +12,6 @@ let database = (function () {
     const games = new Datastore({ filename: GAMES_DB_FILE, autoload: true });
     const invites = new Datastore({ filename: INVITES_DB_FILE, autoload: true });
 
-    games.update({ played: true }, { $set: { confirmed: true } }, { multi: true });
-    users.update({}, { $unset: { wins: true, losses: true } }, { multi: true });
-
     const HTTPError = function () {
         return function (code, message) {
             this.code = code;
