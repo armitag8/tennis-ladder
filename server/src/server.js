@@ -194,9 +194,9 @@ router.use(session({
   httpOnly: true,
   store: new NedbStore({ filename: 'db/sessions.db' })
 }));
-router.use(/^\/((?!(api)).)*$/, express.static(path.join(__dirname,
-  isProduction() ? "../../client/build/" : "../../client/public/")
-));
+const frontend = path.join(__dirname, isProduction() ? "../../client/build/" : "../../client/public/");
+router.use(express.static(frontend));
+router.get(/^\/((?!(api)).)*$/, (req, res, next) => res.sendFile(frontend));
 router.use(logger("dev"));
 router.use(express.json());
 router.use(express.urlencoded({ extended: false }));
@@ -492,6 +492,8 @@ router.delete("/api/invite/:_id", validateUserId, checkOwnerOrMod, (req, res, ne
       .then(result => res.json(result))
       .catch(error => res.status(error.code).send(error.message))
 );
+
+router.get("*", (req, res) => res.redirect("/"));
 
 const gameScheduledEmail = (game, player1, player2) => (
   `
