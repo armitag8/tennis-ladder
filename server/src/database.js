@@ -382,6 +382,7 @@ let database = (function () {
     module.confirmGame = (gameID, userID) => new Promise((resolve, reject) =>
         games.findOne({ _id: gameID }, (err, game) => {
             if (err) reject(DB_FAIL);
+            else if (! game) reject(new HTTPError(404, "Game not found"));
             else if (game.confirmed) resolve(false);
             else {
                 if (game.player2 !== userID && userID !== "admin")

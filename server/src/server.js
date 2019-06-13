@@ -493,8 +493,6 @@ router.delete("/api/invite/:_id", validateUserId, checkOwnerOrMod, (req, res, ne
       .catch(error => res.status(error.code).send(error.message))
 );
 
-//router.get("*", (req, res) => res.redirect("/"));
-
 const gameScheduledEmail = (game, player1, player2) => (
   `
 <h2>New Match Scheduled: Week ${game.week}</h2>
