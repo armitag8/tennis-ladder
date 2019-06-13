@@ -194,7 +194,7 @@ router.use(session({
   httpOnly: true,
   store: new NedbStore({ filename: 'db/sessions.db' })
 }));
-router.get(/^\/((?!(api)).)*$/, express.static(path.join(__dirname,
+router.use(/^\/((?!(api)).)*$/, express.static(path.join(__dirname,
   isProduction() ? "../../client/build/" : "../../client/public/")
 ));
 router.use(logger("dev"));
