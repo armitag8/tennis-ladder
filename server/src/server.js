@@ -18,7 +18,8 @@ const transporter = mailer.createTransport({
   auth: {
     user: config.admin,
     pass: credentials.email
-  }
+  },
+  pool: true
 });
 
 const WEEK_IN_SECONDS = 7 * 24 * 60 * 60 * 1000;
