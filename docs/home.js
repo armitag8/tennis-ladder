@@ -1,17 +1,19 @@
 const home = `
-<h3>
-  The Ladder is done for now
-</h3>
+<div class="jumbotron">
+  <h3>
+    The Ladder is done for now
+  </h3>
 
-<p> 
-  Thank-you for your interest in the ladder.
-</p>
+  <p> 
+    Thank-you for your interest in the ladder.
+  </p>
 
-<hr/>
+  <hr/>
 
-<p>
-  Unfortunately, the season is over and no more matches will be scheduled, played or recorded.
-</p>
+  <p>
+    Unfortunately, the season is over and no more matches will be scheduled, played or recorded.
+  </p>
+</div>
 
 <h4>Next Season</h4>
 <p>
