@@ -1,4 +1,4 @@
-# Tennis Ladder
+# The Ladder is done for now
 
 Thank-you for your interest in the ladder.
 
@@ -8,4 +8,4 @@ Unfortunately, the season is over and no more matches will be scheduled, played 
 
 If you are interested in signing up for next season, or would like to know more, email:
 
-tennis.utsc@gmail.com
+<a href="mailto:tennis.utsc@gmail.com"/>
